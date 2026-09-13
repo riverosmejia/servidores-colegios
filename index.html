@@ -1,0 +1,1651 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Miniservidor de IA Escolar · Configurador 3D y Presupuesto</title>
+<meta name="description" content="Configurador 3D interactivo del miniservidor de IA para colegios en Colombia: componentes, función de cada pieza y presupuesto total estimado.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b1220'/%3E%3Cpath d='M16 5l9 5v12l-9 5-9-5V10z' fill='none' stroke='%2338e0c8' stroke-width='2'/%3E%3C/svg%3E">
+
+<!-- ===== Tipografías (Google Fonts) ===== -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* =========================================================================
+   MINISERVIDOR DE IA ESCOLAR · Hoja de estilos
+   Paleta dark "tech": fondo azul-noche, acento cian/teal, violeta para GPU 1.
+   ========================================================================= */
+
+/* ---------- Tokens de diseño ---------- */
+:root{
+  --bg:        #070b14;   /* fondo principal */
+  --bg-2:      #0b1220;   /* superficies */
+  --bg-3:      #111c2e;   /* superficies elevadas */
+  --line:      #1e2c44;   /* bordes */
+  --line-2:    #2a3c5a;   /* bordes hover */
+  --tx:        #e8eef7;   /* texto principal */
+  --tx-2:      #9fb0c9;   /* texto secundario */
+  --tx-3:      #64758f;   /* texto muted */
+  --cyan:      #38e0c8;   /* acento principal */
+  --cyan-dim:  #1d8d80;
+  --blue:      #4c8dff;   /* GPU 0 */
+  --violet:    #a56cff;   /* GPU 1 */
+  --amber:     #ffb545;   /* advertencias */
+  --radius:    16px;
+  --radius-sm: 10px;
+  --font-d:    'Space Grotesk', system-ui, sans-serif;
+  --font-b:    'Inter', system-ui, sans-serif;
+  --shadow:    0 24px 60px -30px rgba(0,0,0,.9), 0 2px 8px rgba(0,0,0,.4);
+  --glow-cyan: 0 0 0 1px rgba(56,224,200,.45), 0 0 28px -4px rgba(56,224,200,.55);
+}
+
+/* ---------- Reset básico ---------- */
+*,*::before,*::after{ box-sizing:border-box; }
+html{ scroll-behavior:smooth; }
+body{
+  margin:0; background:var(--bg); color:var(--tx);
+  font-family:var(--font-b); font-size:16px; line-height:1.6;
+  -webkit-font-smoothing:antialiased; overflow-x:hidden;
+}
+h1,h2,h3,h4{ font-family:var(--font-d); font-weight:600; line-height:1.15; margin:0; letter-spacing:-.02em; }
+p{ margin:0; }
+a{ color:inherit; text-decoration:none; }
+button{ font-family:inherit; color:inherit; cursor:pointer; }
+:focus-visible{ outline:2px solid var(--cyan); outline-offset:3px; border-radius:6px; }
+.mono{ font-family:'Space Grotesk',ui-monospace,monospace; font-variant-numeric:tabular-nums; }
+
+/* ---------- Barra superior ---------- */
+.topbar{
+  position:sticky; top:0; z-index:60;
+  display:flex; align-items:center; gap:18px;
+  padding:14px clamp(16px,4vw,40px);
+  background:rgba(7,11,20,.78); backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line);
+}
+.brand{ display:flex; align-items:center; gap:10px; font-family:var(--font-d); font-weight:600; letter-spacing:-.01em; }
+.brand svg{ flex:0 0 auto; }
+.brand small{ display:block; font-family:var(--font-b); font-weight:400; font-size:11px; color:var(--tx-3); letter-spacing:0; }
+.topnav{ margin-left:auto; display:flex; gap:22px; font-size:14px; color:var(--tx-2); }
+.topnav a:hover{ color:var(--cyan); }
+.topnav a{ transition:color .18s ease; }
+
+/* ---------- Hero ---------- */
+.hero{ max-width:1240px; margin:0 auto; padding:clamp(40px,7vw,84px) clamp(16px,4vw,40px) 24px; }
+.eyebrow{
+  display:inline-flex; align-items:center; gap:10px;
+  font-family:var(--font-d); font-size:12px; font-weight:500;
+  letter-spacing:.18em; text-transform:uppercase; color:var(--cyan);
+}
+.eyebrow::before{ content:''; width:34px; height:1px; background:var(--cyan); display:block; }
+h1{ font-size:clamp(30px,5.4vw,54px); margin:18px 0 16px; max-width:20ch; }
+h1 em{ font-style:normal; color:var(--cyan); }
+.lead{ font-size:clamp(15px,1.6vw,18px); color:var(--tx-2); max-width:62ch; font-weight:300; }
+.chips{ display:flex; flex-wrap:wrap; gap:9px; margin-top:26px; }
+.chip{
+  font-size:12.5px; padding:7px 13px; border-radius:999px;
+  border:1px solid var(--line-2); background:var(--bg-2); color:var(--tx-2);
+  display:inline-flex; align-items:center; gap:7px;
+}
+.chip i{ width:6px; height:6px; border-radius:50%; background:var(--cyan); display:block; }
+
+/* ---------- Secciones ---------- */
+.section{ max-width:1240px; margin:0 auto; padding:clamp(44px,6vw,76px) clamp(16px,4vw,40px); }
+.section-head{ max-width:70ch; margin-bottom:30px; }
+.kicker{
+  font-family:var(--font-d); font-size:12px; letter-spacing:.18em;
+  text-transform:uppercase; color:var(--cyan); display:block; margin-bottom:12px;
+}
+h2{ font-size:clamp(23px,3.2vw,36px); margin-bottom:12px; }
+.sub{ color:var(--tx-2); font-weight:300; }
+
+/* ---------- Escenario 3D ---------- */
+.stage-wrap{
+  max-width:1240px; margin:0 auto; padding:0 clamp(16px,4vw,40px);
+}
+.stage{
+  position:relative; height:clamp(430px,64vh,660px);
+  border:1px solid var(--line); border-radius:var(--radius);
+  background:radial-gradient(120% 90% at 50% 0%,#0e1a2e 0%,#070b14 70%);
+  overflow:hidden; box-shadow:var(--shadow);
+}
+.stage canvas{ display:block; }
+/* Rejilla de fondo sutil del visor */
+.stage::after{
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background-image:linear-gradient(rgba(56,224,200,.05) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(56,224,200,.05) 1px,transparent 1px);
+  background-size:52px 52px;
+  mask-image:radial-gradient(80% 70% at 50% 45%,#000 20%,transparent 100%);
+}
+.stage-hint{
+  position:absolute; left:16px; bottom:14px; z-index:3;
+  font-size:12px; color:var(--tx-3); display:flex; gap:14px; flex-wrap:wrap;
+  pointer-events:none;
+}
+.stage-hint span{ display:inline-flex; align-items:center; gap:6px; }
+
+/* Controles flotantes del visor */
+.stage-tools{ position:absolute; top:14px; left:14px; z-index:4; display:flex; gap:8px; flex-wrap:wrap; max-width:calc(100% - 28px); }
+.btn{
+  border:1px solid var(--line-2); background:rgba(17,28,46,.86); color:var(--tx);
+  border-radius:var(--radius-sm); padding:9px 14px; font-size:13px; font-weight:500;
+  display:inline-flex; align-items:center; gap:8px; backdrop-filter:blur(8px);
+  transition:border-color .18s ease, background .18s ease, transform .18s ease;
+}
+.btn:hover{ border-color:var(--cyan); background:rgba(29,141,128,.18); }
+.btn:active{ transform:translateY(1px); }
+.btn.on{ border-color:var(--cyan); background:rgba(56,224,200,.16); box-shadow:var(--glow-cyan); }
+
+/* Contador de presupuesto (esquina superior derecha) */
+.budget{
+  position:absolute; top:14px; right:14px; z-index:4; text-align:right;
+  background:rgba(11,18,32,.86); border:1px solid var(--line-2); border-radius:14px;
+  padding:12px 16px; backdrop-filter:blur(10px); box-shadow:var(--shadow);
+}
+.budget-label{ font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--tx-3); }
+.budget-total{ font-family:var(--font-d); font-size:clamp(19px,2.6vw,26px); font-weight:700; color:var(--cyan); font-variant-numeric:tabular-nums; }
+.budget-list{ margin-top:10px; display:grid; gap:3px; }
+.budget-row{
+  display:flex; justify-content:space-between; gap:16px; font-size:11.5px;
+  color:var(--tx-3); font-variant-numeric:tabular-nums; transition:color .15s ease;
+}
+.budget-row .r-name{ max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.budget-row.hl{ color:var(--cyan); }
+.budget-row.hl .r-name{ color:var(--cyan); }
+
+/* Tooltip de hover */
+.tip{
+  position:absolute; z-index:6; pointer-events:none; opacity:0;
+  transform:translate(-50%,-100%) translateY(-14px);
+  transition:opacity .14s ease;
+  width:min(310px,72vw);
+  background:rgba(11,18,32,.96); border:1px solid var(--line-2);
+  border-radius:14px; padding:13px 15px; box-shadow:var(--shadow);
+  backdrop-filter:blur(10px);
+}
+.tip.show{ opacity:1; }
+.tip-name{ font-family:var(--font-d); font-weight:600; font-size:14.5px; margin-bottom:5px; }
+.tip-model{ font-size:12px; color:var(--cyan); margin-bottom:7px; }
+.tip-just{ font-size:12px; color:var(--tx-2); line-height:1.5; }
+.tip-cost{ margin-top:9px; font-family:var(--font-d); font-weight:600; font-size:14px; color:var(--tx); font-variant-numeric:tabular-nums; }
+
+/* ---------- Panel lateral de ficha técnica ---------- */
+.panel{
+  position:fixed; top:0; right:0; z-index:80; height:100dvh;
+  width:min(410px,92vw); background:linear-gradient(180deg,var(--bg-2),var(--bg));
+  border-left:1px solid var(--line); box-shadow:-30px 0 70px -40px #000;
+  transform:translateX(102%); transition:transform .34s cubic-bezier(.4,0,.2,1);
+  display:flex; flex-direction:column;
+}
+.panel.open{ transform:translateX(0); }
+.panel-head{
+  display:flex; align-items:flex-start; gap:14px;
+  padding:22px 22px 16px; border-bottom:1px solid var(--line);
+}
+.panel-head h3{ font-size:19px; }
+.panel-kicker{ font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--cyan); margin-bottom:7px; display:block; }
+.panel-body{ padding:20px 22px 40px; overflow-y:auto; }
+.panel-close{
+  margin-left:auto; flex:0 0 auto; width:34px; height:34px; border-radius:9px;
+  border:1px solid var(--line-2); background:transparent; color:var(--tx-2);
+  font-size:17px; line-height:1; display:grid; place-items:center;
+}
+.panel-close:hover{ border-color:var(--cyan); color:var(--cyan); }
+.ficha{ display:grid; gap:16px; }
+.ficha-block{ border:1px solid var(--line); border-radius:12px; padding:14px 16px; background:rgba(17,28,46,.5); }
+.ficha-label{ font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--tx-3); margin-bottom:6px; }
+.ficha-val{ font-size:14px; color:var(--tx); }
+.ficha-cost{ font-family:var(--font-d); font-size:24px; font-weight:700; color:var(--cyan); font-variant-numeric:tabular-nums; }
+.panel-model{ font-family:var(--font-d); font-size:15px; color:var(--cyan); }
+.overlay{
+  position:fixed; inset:0; z-index:70; background:rgba(4,7,13,.6);
+  opacity:0; pointer-events:none; transition:opacity .3s ease; backdrop-filter:blur(2px);
+}
+.overlay.show{ opacity:1; pointer-events:auto; }
+
+/* ---------- Tarjetas de GPU (asignación de recursos) ---------- */
+.grid-2{ display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:20px; }
+.card{
+  border:1px solid var(--line); border-radius:var(--radius); padding:24px;
+  background:linear-gradient(180deg,rgba(17,28,46,.7),rgba(11,18,32,.5));
+  position:relative; overflow:hidden;
+}
+.card::before{ content:''; position:absolute; inset:0 0 auto 0; height:2px; background:var(--accent,var(--cyan)); opacity:.85; }
+.card.gpu0{ --accent:var(--blue); }
+.card.gpu1{ --accent:var(--violet); }
+.card h3{ font-size:19px; margin-bottom:6px; }
+.card .tagline{ font-size:13px; color:var(--tx-3); margin-bottom:18px; }
+.bar{ height:8px; border-radius:999px; background:var(--bg-3); overflow:hidden; margin:10px 0 6px; }
+.bar i{ display:block; height:100%; border-radius:999px; background:var(--accent,var(--cyan)); }
+.bar-foot{ display:flex; justify-content:space-between; font-size:11.5px; color:var(--tx-3); font-variant-numeric:tabular-nums; }
+.mlist{ list-style:none; margin:18px 0 0; padding:0; display:grid; gap:11px; }
+.mlist li{ display:flex; gap:11px; font-size:13.5px; color:var(--tx-2); }
+.mlist li::before{ content:''; flex:0 0 auto; width:6px; height:6px; margin-top:8px; border-radius:2px; background:var(--accent,var(--cyan)); }
+.badge{
+  display:inline-block; font-size:10.5px; letter-spacing:.14em; text-transform:uppercase;
+  border:1px solid var(--accent,var(--cyan)); color:var(--accent,var(--cyan));
+  border-radius:999px; padding:4px 11px; margin-bottom:14px; font-weight:500;
+}
+
+/* ---------- Requisitos de instalación ---------- */
+.grid-4{ display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:18px; }
+.req{ border:1px solid var(--line); border-radius:var(--radius); padding:22px; background:var(--bg-2); transition:border-color .2s ease, transform .2s ease; }
+.req:hover{ border-color:var(--line-2); transform:translateY(-3px); }
+.req-ico{
+  width:42px; height:42px; border-radius:12px; display:grid; place-items:center;
+  background:rgba(56,224,200,.1); border:1px solid rgba(56,224,200,.28); margin-bottom:16px;
+}
+.req h4{ font-size:15.5px; margin-bottom:9px; }
+.req p{ font-size:13px; color:var(--tx-2); }
+.req ul{ margin:10px 0 0; padding-left:16px; font-size:12.5px; color:var(--tx-3); }
+.req li{ margin-bottom:5px; }
+
+/* ---------- Footer ---------- */
+.footer{ border-top:1px solid var(--line); background:linear-gradient(180deg,var(--bg),#050810); margin-top:40px; }
+.footer-inner{ max-width:1240px; margin:0 auto; padding:clamp(40px,6vw,64px) clamp(16px,4vw,40px); text-align:center; }
+.total-label{ font-size:12px; letter-spacing:.2em; text-transform:uppercase; color:var(--tx-3); }
+.total{
+  font-family:var(--font-d); font-weight:700; letter-spacing:-.03em;
+  font-size:clamp(38px,8vw,84px); color:var(--cyan); margin:8px 0 6px;
+  font-variant-numeric:tabular-nums; line-height:1;
+  text-shadow:0 0 60px rgba(56,224,200,.35);
+}
+.total small{ font-size:.42em; font-weight:500; color:var(--tx-2); margin-left:8px; letter-spacing:0; }
+.footer-note{ font-size:13px; color:var(--tx-3); max-width:64ch; margin:16px auto 0; }
+.footer-repo{ margin-top:26px; font-size:12px; color:var(--tx-3); }
+.footer-repo a{ color:var(--cyan); }
+
+/* ---------- Animación de aparición ---------- */
+.reveal{ opacity:0; transform:translateY(18px); transition:opacity .6s ease, transform .6s ease; }
+.reveal.in{ opacity:1; transform:none; }
+
+/* ---------- Responsive ---------- */
+@media (max-width:900px){
+  .topnav{ display:none; }
+  .budget-list{ display:none; }         /* en móvil solo el total */
+  .stage-tools .btn span.t{ display:none; }  /* botones compactos */
+  .stage{ height:min(74vh,520px); }
+}
+@media (max-width:560px){
+  .budget{ padding:9px 12px; }
+  .budget-total{ font-size:17px; }
+  .stage-hint span.hide-sm{ display:none; }
+}
+@media (prefers-reduced-motion:reduce){
+  html{ scroll-behavior:auto; }
+  .reveal{ opacity:1; transform:none; transition:none; }
+  .panel{ transition:none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===================== BARRA SUPERIOR ===================== -->
+<header class="topbar">
+  <div class="brand">
+    <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true">
+      <rect width="32" height="32" rx="8" fill="#0b1220" stroke="#1e2c44"/>
+      <path d="M16 5.5l8.6 4.8v11.4L16 26.5l-8.6-4.8V10.3z" fill="none" stroke="#38e0c8" stroke-width="1.8"/>
+      <circle cx="16" cy="16" r="2.6" fill="#38e0c8"/>
+    </svg>
+    <div>Miniservidor IA Escolar<small>Configurador técnico · Colombia</small></div>
+  </div>
+  <nav class="topnav">
+    <a href="#configurador">Configurador 3D</a>
+    <a href="#recursos">Asignación</a>
+    <a href="#instalacion">Instalación</a>
+    <a href="#presupuesto">Presupuesto</a>
+  </nav>
+</header>
+
+<!-- ===================== HERO ===================== -->
+<section class="hero">
+  <span class="eyebrow">Infraestructura de IA on-premise</span>
+  <h1>El servidor de IA que vive <em>dentro del colegio</em>, no en la nube.</h1>
+  <p class="lead">
+    Un equipo Silencioso, seguro y sin suscripciones mensuales que atiende a un salón completo de estudiantes
+    ejecutando modelos de lenguaje e imágenes de forma local. Aquí puede explorar cada componente en 3D,
+    entender para qué sirve y ver cuánto cuesta.
+  </p>
+  <div class="chips">
+    <span class="chip"><i></i>Datos que no salen del colegio</span>
+    <span class="chip"><i></i>Funciona sin internet</span>
+    <span class="chip"><i></i>Sin pago mensual por estudiante</span>
+    <span class="chip"><i></i>32 GB de VRAM dedicada</span>
+    <span class="chip"><i></i>Protegido con UPS online</span>
+  </div>
+</section>
+
+<!-- ===================== CONFIGURADOR 3D ===================== -->
+<section class="stage-wrap" id="configurador">
+  <div class="stage" id="stage">
+    <!-- Controles que flotan sobre el lienzo 3D -->
+    <div class="stage-tools">
+      <button class="btn" id="btnExplode" aria-pressed="true">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/></svg>
+        <span class="t">Vista explosionada</span>
+      </button>
+      <button class="btn" id="btnSpin" aria-pressed="true">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v5h-5"/></svg>
+        <span class="t">Rotación auto</span>
+      </button>
+      <button class="btn" id="btnReset">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 4v5h5"/></svg>
+        <span class="t">Centrar</span>
+      </button>
+    </div>
+
+    <!-- Contador de presupuesto con desglose -->
+    <aside class="budget" aria-label="Presupuesto total del equipo">
+      <div class="budget-label">Inversión total</div>
+      <div class="budget-total" id="budgetTotal">$0</div>
+      <div class="budget-list" id="budgetList"></div>
+    </aside>
+
+    <!-- Tooltip de hover -->
+    <div class="tip" id="tip" role="tooltip" aria-hidden="true">
+      <div class="tip-name" id="tipName"></div>
+      <div class="tip-model" id="tipModel"></div>
+      <div class="tip-just" id="tipJust"></div>
+      <div class="tip-cost" id="tipCost"></div>
+    </div>
+
+    <!-- Pistas de uso -->
+    <div class="stage-hint">
+      <span>🖱️ Arrastrar para rotar</span>
+      <span>🔍 Scroll para acercar</span>
+      <span class="hide-sm">👆 Clic en una pieza para ver su ficha</span>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== PANEL LATERAL (FICHA TÉCNICA) ===================== -->
+<div class="overlay" id="overlay"></div>
+<aside class="panel" id="panel" aria-hidden="true" aria-label="Ficha técnica del componente">
+  <div class="panel-head">
+    <div>
+      <span class="panel-kicker" id="panelKicker">Componente</span>
+      <h3 id="panelTitle">—</h3>
+    </div>
+    <button class="panel-close" id="panelClose" aria-label="Cerrar ficha">✕</button>
+  </div>
+  <div class="panel-body">
+    <div class="ficha" id="panelBody"></div>
+  </div>
+</aside>
+
+<!-- ===================== ASIGNACIÓN DE RECURSOS ===================== -->
+<section class="section" id="recursos">
+  <div class="section-head reveal">
+    <span class="kicker">Asignación de recursos</span>
+    <h2>Dos tarjetas gráficas, dos trabajos distintos</h2>
+    <p class="sub">
+      El equipo reparte las tareas para que un salón de 30 a 40 estudiantes no lo tumbe:
+      una GPU piensa y escribe, la otra dibuja y analiza imágenes. El resto del hardware
+      se encarga de las colas, las sesiones y los registros.
+    </p>
+  </div>
+
+  <div class="grid-2">
+    <!-- GPU 0 -->
+    <article class="card gpu0 reveal">
+      <span class="badge">GPU 0 · Razonamiento</span>
+      <h3>Lenguaje, texto y moderación</h3>
+      <p class="tagline">16 GB de VRAM dedicados a la conversación con los estudiantes.</p>
+      <div class="bar"><i style="width:81%"></i></div>
+      <div class="bar-foot"><span>Consumo estimado</span><span>10 – 13 GB de 16 GB</span></div>
+      <ul class="mlist">
+        <li>Llama 3.1 8B — asistente general y explicación de temas.</li>
+        <li>DeepSeek-R1 Distill 8B — razonamiento paso a paso en matemáticas y ciencias.</li>
+        <li>Qwen 2.5 7B / 14B cuantizado — apoyo en español y tareas largas.</li>
+        <li>Moderador de seguridad — filtra contenido inapropiado antes de responder.</li>
+      </ul>
+    </article>
+
+    <!-- GPU 1 -->
+    <article class="card gpu1 reveal">
+      <span class="badge">GPU 1 · Visual y creativo</span>
+      <h3>Imágenes y visión por computador</h3>
+      <p class="tagline">16 GB de VRAM para generar material gráfico y analizar lo que se le muestra.</p>
+      <div class="bar"><i style="width:63%"></i></div>
+      <div class="bar-foot"><span>Consumo estimado</span><span>8 – 11 GB de 16 GB</span></div>
+      <ul class="mlist">
+        <li>Stable Diffusion XL Turbo — ilustraciones para clases, carteles y material didáctico.</li>
+        <li>Modelos de visión por computador — describir, clasificar y leer imágenes.</li>
+        <li>Aislada físicamente de la GPU 0: una tarea pesada no bloquea la otra.</li>
+        <li>Capacidad de crecimiento: al ir en ranuras separadas, admite futuras actualizaciones.</li>
+      </ul>
+    </article>
+  </div>
+
+  <div class="card reveal" style="margin-top:20px; --accent:var(--tx-3)">
+    <span class="badge" style="--accent:var(--tx-2)">CPU + 64 GB RAM DDR5</span>
+    <h3>El tráfico y la memoria del sistema</h3>
+    <p class="tagline">
+      Maneja las colas de peticiones HTTP, la caché de sesiones de los alumnos,
+      los registros del docente y el sistema base — sin robarle memoria a las tarjetas gráficas.
+    </p>
+  </div>
+</section>
+
+<!-- ===================== REQUISITOS DE INSTALACIÓN FÍSICA ===================== -->
+<section class="section" id="instalacion">
+  <div class="section-head reveal">
+    <span class="kicker">Requisitos de instalación física</span>
+    <h2>Cuatro condiciones para que el equipo dure años</h2>
+    <p class="sub">
+      El hardware es solo la mitad del proyecto. Estas cuatro condiciones del sitio de instalación
+      determinan si el servidor rinde y cuánto tarda en fallar.
+    </p>
+  </div>
+
+  <div class="grid-4">
+    <!-- Ubicación -->
+    <article class="req reveal">
+      <div class="req-ico">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#38e0c8" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V8l7-5 7 5v13"/><path d="M9 21v-6h6v6"/></svg>
+      </div>
+      <h4>Ubicación</h4>
+      <p>Espacio cerrado y controlado: sala de profesores, sala de servidores o un soporte elevado en la sala de sistemas.</p>
+      <ul>
+        <li>Nunca en el piso</li>
+        <li>Lejos de polvo y tiza</li>
+        <li>Acceso restringido</li>
+      </ul>
+    </article>
+
+    <!-- Eléctrico -->
+    <article class="req reveal">
+      <div class="req-ico">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#38e0c8" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4.5 13H11l-1 9 8.5-11H12z"/></svg>
+      </div>
+      <h4>Eléctrico</h4>
+      <p>Circuito con polo a tierra certificado y conexión exclusiva a la salida de la UPS online de 2 kVA.</p>
+      <ul>
+        <li>Polo a tierra certificado</li>
+        <li>Salida exclusiva de la UPS</li>
+        <li>Aísla armónicos y apagones</li>
+      </ul>
+    </article>
+
+    <!-- Térmico -->
+    <article class="req reveal">
+      <div class="req-ico">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#38e0c8" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13.5V5a2 2 0 1 1 4 0v8.5a4 4 0 1 1-4 0z"/><path d="M12 16.5v-2"/></svg>
+      </div>
+      <h4>Térmico</h4>
+      <p>Temperatura ambiental ideal entre 20 °C y 26 °C, con ventilación de presión positiva en el chasis.</p>
+      <ul>
+        <li>20 °C – 26 °C</li>
+        <li>Presión positiva de aire</li>
+        <li>Evita el <em>thermal throttling</em></li>
+      </ul>
+    </article>
+
+    <!-- Red -->
+    <article class="req reveal">
+      <div class="req-ico">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#38e0c8" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="14" width="20" height="7" rx="2"/><path d="M6 17.5h.01M10 17.5h.01"/><path d="M12 14V9"/><path d="M8 6.5a5.7 5.7 0 0 1 8 0"/></svg>
+      </div>
+      <h4>Red</h4>
+      <p>Conexión obligatoria por cable Ethernet Cat 6A al switch central del colegio.</p>
+      <ul>
+        <li>Cat 6A obligatorio</li>
+        <li>Evitar Wi-Fi</li>
+        <li>Sin cuello de botella en latencia</li>
+      </ul>
+    </article>
+  </div>
+</section>
+
+<!-- ===================== FOOTER · PRESUPUESTO TOTAL ===================== -->
+<footer class="footer" id="presupuesto">
+  <div class="footer-inner">
+    <div class="total-label">Inversión total estimada del proyecto</div>
+    <div class="total" id="footerTotal">$16.640.000<small>COP</small></div>
+    <p class="footer-note">
+      Presupuesto objetivo entre $15.000.000 y $20.000.000 COP, calculado a precios de mercado local
+      e importación en Colombia. Cifra estimada de referencia: los precios finales dependen del proveedor
+      y del momento de la compra. No incluye instalación eléctrica, obra civil ni mano de obra de configuración.
+      El desglose de componentes suma $16.590.000; el presupuesto de $16.640.000 incluye $50.000 de margen
+      para imprevistos de compra.
+    </p>
+    <div class="footer-repo">
+      Proyecto de infraestructura educativa · <a href="https://github.com/riverosmejia/servidores-colegios">riverosmejia/servidores-colegios</a>
+    </div>
+  </div>
+</footer>
+
+<!-- =========================================================================
+     THREE.js + OrbitControls por CDN (versión r160 o superior, módulos ES)
+     ========================================================================= -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+/* =========================================================================
+   1. DATOS DEL PROYECTO (fuente única de verdad)
+   Este JSON alimenta el tooltip, el panel lateral, el contador de presupuesto
+   y la lista desglosada. No se muestra crudo en pantalla.
+   ========================================================================= */
+const COMPONENTES = [
+  { id:'gpu',   nombre:'Tarjetas Gráficas (GPU)', modelo:'2x NVIDIA GeForce RTX 4060 Ti 16GB GDDR6',
+    justificacion:'32GB VRAM total: GPU 0 para razonamiento/texto (Llama/DeepSeek/Qwen), GPU 1 para generación gráfica (Stable Diffusion).',
+    costo_cop:4800000, color:0x4c8dff,
+    detalle:['32 GB de VRAM total, repartidos en dos tarjetas aisladas físicamente.',
+             'Permite que dos estudiantes usen tareas pesadas a la vez sin bloquearse entre sí.',
+             'La separación entre ranuras es la razón principal por la que se exige una placa X670E.'] },
+
+  { id:'cpu',   nombre:'Procesador (CPU)', modelo:'AMD Ryzen 9 7900X (12c/24h, hasta 5.4GHz)',
+    justificacion:'Procesa el enrutamiento de peticiones concurrentes en el aula sin saturarse.',
+    costo_cop:2100000, color:0xffb545,
+    detalle:['12 núcleos y 24 hilos para atender a un salón completo en simultáneo.',
+             'Gestiona las colas de espera, la descarga de tensores y la lógica del sistema.',
+             'Se mantiene cómodo porque el trabajo pesado de IA vive en las GPU.'] },
+
+  { id:'mobo',  nombre:'Placa Base', modelo:'ASUS ProArt X670E-Creator WiFi / ASRock X670E Taichi',
+    justificacion:'Soporte PCIe bifurcado x8/x8 con separación física entre GPUs para flujo de aire.',
+    costo_cop:1850000, color:0x38e0c8,
+    detalle:['PCIe bifurcado x8/x8: las dos GPU trabajan a ancho de banda completo.',
+             'De 3 a 4 ranuras de separación física entre tarjetas, clave para la temperatura.',
+             'Es el componente crítico del montaje: una placa económica arruina el resto.'] },
+
+  { id:'ram',   nombre:'Memoria RAM', modelo:'64GB (2x32GB) DDR5 6000MHz CL30',
+    justificacion:'Respaldo del sistema y búfer para modelos secundarios sin colapsar la VRAM.',
+    costo_cop:1250000, color:0x7de3ff,
+    detalle:['64 GB DDR5 a 6000 MHz para el sistema operativo y los servicios.',
+             'Sostiene la caché de sesiones de los alumnos y los registros del docente.',
+             'Permite cargar modelos secundarios sin tocar la memoria de las GPU.'] },
+
+  { id:'nvme',  nombre:'Almacenamiento NVMe', modelo:'2x Kingston KC3000 / WD Black SN850X 2TB',
+    justificacion:'Lectura a 7000MB/s para cargar pesos de modelos (.safetensors/.gguf) en segundos.',
+    costo_cop:1450000, color:0xb9c6dd,
+    detalle:['Dos unidades M.2 PCIe 4.0 de 2 TB: 4 TB totales.',
+             'Lectura de hasta 7000 MB/s: los modelos abren en segundos, no en minutos.',
+             'Una unidad para sistema y modelos, otra para datos y respaldo local.'] },
+
+  { id:'psu',   nombre:'Fuente de Poder (PSU)', modelo:'Corsair RM1000e / EVGA SuperNOVA 1000W 80+ Gold',
+    justificacion:'Alimentación limpia con dos líneas PCIe independientes ante picos de las dos GPUs.',
+    costo_cop:950000, color:0x9aa9c0,
+    detalle:['1000 W con certificación 80+ Gold y margen ante picos de consumo.',
+             'Dos líneas PCIe independientes: una por tarjeta gráfica.',
+             'Alimentación estable = menos reinicios y menos desgaste de componentes.'] },
+
+  { id:'aio',   nombre:'Refrigeración Líquida (AIO)', modelo:'Arctic Liquid Freezer III 360mm / DeepCool LT720',
+    justificacion:'Disipación del CPU bajo cargas continuas durante la jornada escolar.',
+    costo_cop:650000, color:0x5fd6ff,
+    detalle:['Radiador de 360 mm montado en la parte superior del gabinete.',
+             'Diseñado para carga continua, no para ráfagas cortas de escritorio.',
+             'Mantiene al Ryzen 9 lejos del estrangulamiento térmico.'] },
+
+  { id:'case',  nombre:'Gabinete', modelo:'Fractal Design Meshify 2 XL / Lian Li Lancool III',
+    justificacion:'Espacio para dos GPUs largas, radiador de 360mm y ventilación frontal.',
+    costo_cop:920000, color:0x2a3c5a,
+    detalle:['Volumen interno amplio para dos tarjetas gráficas de gran tamaño.',
+             'Admite radiador de 360 mm y ventilación frontal sin restricciones.',
+             'Filtros de polvo: importante en colegios por el polvo y la tiza.'] },
+
+  { id:'fans',  nombre:'Ventilación Adicional', modelo:'3x Noctua Redux / Arctic P14 140mm PWM',
+    justificacion:'Flujo de aire dirigido a la separación entre las dos GPUs.',
+    costo_cop:220000, color:0x8fa4c4,
+    detalle:['Tres ventiladores PWM de 140 mm con velocidad regulable.',
+             'Flujo dirigido al espacio entre las dos tarjetas gráficas.',
+             'Configuración de presión positiva para expulsar el polvo del chasis.'] },
+
+  { id:'ups',   nombre:'UPS', modelo:'UPS Online Doble Conversión 2kVA/1800W (Powest Titan / CDP)',
+    justificacion:'Obligatorio en Colombia: aísla de armónicos, caídas de voltaje y apagones.',
+    costo_cop:1950000, color:0xff8f6b,
+    detalle:['Doble conversión: la salida no depende de cómo llegue la energía de la red.',
+             'Protege el equipo de caídas de voltaje y apagones típicos de redes escolares.',
+             'Obligatorio en Colombia: es la mejor póliza contra perder el servidor.'] },
+
+  { id:'lan',   nombre:'Conectividad LAN', modelo:'Switch Gigabit administrable 8 puertos + Patch cords Cat6A',
+    justificacion:'Enlace cableado dedicado al switch principal del colegio.',
+    costo_cop:450000, color:0x6ee7a8,
+    detalle:['Switch Gigabit administrable de 8 puertos para segmentar el tráfico.',
+             'Enlace dedicado por cable al switch principal del colegio.',
+             'Cableado Cat 6A: latencia baja y estable para 30-40 estudiantes.'] },
+];
+
+/* Total del proyecto.
+   Nota de transparencia: la suma de los ítems del desglose da $16.590.000,
+   mientras que el presupuesto oficial del documento es $16.640.000. La
+   diferencia de $50.000 se declara como margen de imprevistos para no alterar
+   ninguna cifra real de los componentes. */
+const TOTAL_COP = COMPONENTES.reduce((s,c) => s + c.costo_cop, 0);
+const MARGEN_IMPREVISTOS = 50000;
+const PRESUPUESTO_COP = TOTAL_COP + MARGEN_IMPREVISTOS;
+
+/* Formateador de moneda colombiana */
+const cop = n => '$' + n.toLocaleString('es-CO');
+
+/* =========================================================================
+   2. ESCENA 3D — Miniservidor en vista despiezada
+   Se modela con geometrías primitivas (cajas, cilindros, toros).
+   Cada pieza es un THREE.Group al que se le asocia:
+     - userData.id    -> enlaza con el JSON de componentes
+     - userData.home  -> posición ensamblada
+     - userData.exp   -> posición en vista explosionada
+   Así la animación es un simple lerp entre ambas posiciones.
+   ========================================================================= */
+
+const stage = document.getElementById('stage');
+
+// --- Renderer -------------------------------------------------------------
+const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(stage.clientWidth, stage.clientHeight);
+renderer.shadowMap.enabled = false;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+stage.appendChild(renderer.domElement);
+
+// --- Escena y cámara ------------------------------------------------------
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x070b14, 0.021);
+
+const camera = new THREE.PerspectiveCamera(42, stage.clientWidth/stage.clientHeight, 0.1, 220);
+camera.position.set(19.5, 14.0, 26.0);
+
+// --- Controles de órbita (arrastrar rota, scroll hace zoom) ---------------
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;      // inercia suave al soltar
+controls.dampingFactor = 0.06;
+controls.minDistance   = 12;
+controls.maxDistance   = 78;
+controls.maxPolarAngle = Math.PI * 0.52;   // no permite ver por debajo del piso
+controls.target.set(0, 8.4, 0);
+controls.autoRotate = true;
+controls.autoRotateSpeed = 0.55;
+
+// --- Iluminación ----------------------------------------------------------
+scene.add(new THREE.HemisphereLight(0x8fb6ff, 0x0a1020, 1.15));
+
+const key = new THREE.DirectionalLight(0xffffff, 2.1);
+key.position.set(14, 22, 16);
+scene.add(key);
+
+const rimA = new THREE.PointLight(0x38e0c8, 220, 60, 2); rimA.position.set(-14, 9, -10); scene.add(rimA);
+const rimB = new THREE.PointLight(0x4c8dff, 160, 60, 2); rimB.position.set( 14, 5,  -12); scene.add(rimB);
+const rimC = new THREE.PointLight(0xa56cff, 120, 55, 2); rimC.position.set(  0, 3,   16); scene.add(rimC);
+
+// --- Utilidades de construcción ------------------------------------------
+
+/** Crea un material estándar con emisivo configurable. */
+function mat(color, { metalness=0.75, roughness=0.35, emissive=0x000000, emissiveIntensity=0, opacity=1 } = {}) {
+  return new THREE.MeshStandardMaterial({
+    color, metalness, roughness, emissive, emissiveIntensity,
+    transparent: opacity < 1, opacity
+  });
+}
+
+/**
+ * Registra una pieza del equipo.
+ * @param {THREE.Object3D} obj  - malla o grupo que se puede seleccionar
+ * @param {string} id           - id del componente en COMPONENTES
+ * @param {object} home         - posición ensamblada {x,y,z}
+ * @param {object} exp          - posición en vista explosionada {x,y,z}
+ */
+const interactivos = [];   // objetos que responde al Raycaster
+const animables    = [];   // objetos cuya posición se interpola
+
+function pieza(obj, id, home, exp) {
+  obj.userData.id   = id;
+  obj.userData.home = new THREE.Vector3(home.x, home.y, home.z);
+  obj.userData.exp  = new THREE.Vector3(exp.x,  exp.y,  exp.z);
+  obj.position.copy(obj.userData.home);
+  obj.userData.baseColor = null;   // se rellena al recolectar materiales
+  scene.add(obj);
+  interactivos.push(obj);
+  animables.push(obj);
+  return obj;
+}
+
+/** Devuelve todos los materiales de un objeto (para hover/glow). */
+function materialesDe(obj) {
+  const out = [];
+  obj.traverse(o => {
+    // Solo mallas con material propio y con color/emissive (MeshStandardMaterial
+    // o MeshBasicMaterial). Se descartan líneas, rejillas y helpers.
+    if (!o.isMesh || !o.material) return;
+    const mats = Array.isArray(o.material) ? o.material : [o.material];
+    for (const m of mats) if (m && m.color) out.push(m);
+  });
+  return out;
+}
+
+/** Guarda el color original de cada material para poder restaurarlo. */
+function memorizarColores() {
+  for (const obj of interactivos) {
+    obj.userData.mats = materialesDe(obj).map(m => ({
+      m,
+      color: m.color.clone(),
+      // MeshBasicMaterial no tiene emissive: se usa negro como valor neutro.
+      emissive: m.emissive ? m.emissive.clone() : new THREE.Color(0x000000),
+      ei: m.emissiveIntensity || 0,
+      op: m.opacity
+    }));
+  }
+}
+
+/* -------------------------------------------------------------------------
+   2.1 GABINETE — malla semitransparente en wireframe que enmarca todo
+   ------------------------------------------------------------------------- */
+const CASE_W = 9, CASE_H = 19, CASE_D = 9;   // ancho, alto, profundidad
+
+const caseGroup = new THREE.Group();
+const caseBox = new THREE.Mesh(
+  new THREE.BoxGeometry(CASE_W, CASE_H, CASE_D),
+  new THREE.MeshBasicMaterial({
+    color: 0x2f4a6e, wireframe: true, transparent: true, opacity: 0.34
+  })
+);
+// La geometría de caja se centra en su origen: se eleva la mitad de su alto.
+caseBox.position.y = CASE_H / 2;
+caseGroup.add(caseBox);
+
+// Vidrio lateral tenue para dar sensación de chasis cerrado
+const glass = new THREE.Mesh(
+  new THREE.BoxGeometry(CASE_W, CASE_H, CASE_D),
+  new THREE.MeshStandardMaterial({
+    color: 0x0d1a2c, transparent: true, opacity: 0.1,
+    metalness: 0.9, roughness: 0.15, side: THREE.DoubleSide
+  })
+);
+glass.position.y = CASE_H / 2;
+caseGroup.add(glass);
+
+// Patas / base del chasis
+const base = new THREE.Mesh(
+  new THREE.BoxGeometry(CASE_W + 0.4, 0.35, CASE_D + 0.4),
+  mat(0x1b2941, { metalness:0.8, roughness:0.5 })
+);
+base.position.y = -0.18;
+caseGroup.add(base);
+
+/** Piso reflectante muy tenue: da profundidad a la escena. */
+const piso = new THREE.Mesh(
+  new THREE.CircleGeometry(30, 64),
+  new THREE.MeshStandardMaterial({ color:0x0b1220, metalness:0.95, roughness:0.42 })
+);
+piso.rotation.x = -Math.PI / 2;
+piso.position.y = -0.36;
+scene.add(piso);
+
+/** Rejilla luminosa del piso (líneas de acento tecnológico). */
+const grid = new THREE.GridHelper(60, 30, 0x1a3450, 0x122238);
+grid.position.y = -0.35;
+scene.add(grid);
+
+/* -------------------------------------------------------------------------
+   2.2 TARJETAS GRÁFICAS — dos GPU diferenciadas por color
+   GPU 0 (azul, razonamiento) y GPU 1 (violeta, visual/creativo)
+   ------------------------------------------------------------------------- */
+
+/**
+ * Construye una GPU: cuerpo, disipador con aletas, dos ventiladores y un LED
+ * del color asignado para distinguirla a simple vista.
+ */
+function construirGPU(color, etiquetaColor) {
+  const g = new THREE.Group();
+
+  // Cuerpo de la tarjeta
+  const cuerpo = new THREE.Mesh(
+    new THREE.BoxGeometry(6.4, 1.15, 3.0),
+    mat(0x171f2e, { metalness:0.85, roughness:0.3 })
+  );
+  g.add(cuerpo);
+
+  // Disipador superior con aletas
+  const shroud = new THREE.Mesh(
+    new THREE.BoxGeometry(6.5, 0.55, 3.05),
+    mat(0x212c40, { metalness:0.9, roughness:0.35 })
+  );
+  shroud.position.y = 0.8;
+  g.add(shroud);
+
+  // Dos ventiladores (discos) que giran continuamente
+  const aspas = [];
+  for (const x of [-1.6, 1.6]) {
+    const fan = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.95, 0.95, 0.16, 22),
+      mat(0x2c3a52, { metalness:0.7, roughness:0.45 })
+    );
+    fan.rotation.x = Math.PI / 2;      // el disco mira hacia arriba
+    fan.position.set(x, 1.06, 0);
+    g.add(fan);
+    aspas.push(fan);
+
+    // Aspas internas para que la rotación sea visible
+    for (let i = 0; i < 5; i++) {
+      const pala = new THREE.Mesh(
+        new THREE.BoxGeometry(0.78, 0.05, 0.24),
+        mat(0x4a5b78, { metalness:0.6, roughness:0.5 })
+      );
+      pala.position.set(x, 1.13, 0);
+      pala.rotation.y = (i / 5) * Math.PI * 2;
+      pala.translateX(0.36);
+      g.add(pala);
+      aspas.push(pala);
+    }
+  }
+
+  // Franja LED del color de la GPU (identifica GPU 0 y GPU 1)
+  const led = new THREE.Mesh(
+    new THREE.BoxGeometry(0.35, 1.2, 3.06),
+    new THREE.MeshBasicMaterial({ color })
+  );
+  led.position.set(-3.25, 0, 0);
+  g.add(led);
+
+  // Conector PCIe inferior
+  const pcie = new THREE.Mesh(
+    new THREE.BoxGeometry(3.2, 0.35, 0.7),
+    mat(0xb08c3a, { metalness:0.95, roughness:0.25 })
+  );
+  pcie.position.set(0.6, -0.72, 0);
+  g.add(pcie);
+
+  const lente = new THREE.Mesh(
+    new THREE.CircleGeometry(0.5, 24),
+    new THREE.MeshBasicMaterial({ color: etiquetaColor, transparent:true, opacity:0.9 })
+  );
+  lente.position.set(0, 1.35, 0);
+  lente.rotation.x = -Math.PI / 2;
+  g.add(lente);
+
+  return { grupo: g, aspas };
+}
+
+// GPU 0 — Razonamiento (azul). Va en la ranura superior.
+const gpu0 = construirGPU(0x4c8dff, 0x4c8dff);
+pieza(gpu0.grupo, 'gpu',
+  { x: -0.2, y: 12.1, z: -1.4 },
+  { x: -2.6, y: 14.6, z: -5.2 });
+
+// GPU 1 — Visual / Creativo (violeta). Va separada 3 ranuras hacia abajo.
+const gpu1 = construirGPU(0xa56cff, 0xa56cff);
+pieza(gpu1.grupo, 'gpu',
+  { x: -0.2, y: 8.5, z: -1.4 },
+  { x:  4.6, y: 10.4, z: -5.6 });
+
+/* -------------------------------------------------------------------------
+   2.3 PLACA BASE — tabla vertical con chipset, VRM y ranuras
+   ------------------------------------------------------------------------- */
+const mobo = new THREE.Group();
+
+const pcb = new THREE.Mesh(
+  new THREE.BoxGeometry(0.34, 12.6, 8.2),
+  mat(0x123a2e, { metalness:0.5, roughness:0.62 })   // verde PCB oscuro
+);
+mobo.add(pcb);
+
+// Chipset
+const chipset = new THREE.Mesh(
+  new THREE.BoxGeometry(0.5, 1.5, 1.5),
+  mat(0x2b3a52, { metalness:0.85, roughness:0.3 })
+);
+chipset.position.set(0.3, -3.6, 2.6);
+mobo.add(chipset);
+
+// VRM / disipadores
+for (const z of [-3.3, -2.2, 3.3]) {
+  const vrm = new THREE.Mesh(
+    new THREE.BoxGeometry(0.5, 1.5, 0.85),
+    mat(0x384761, { metalness:0.9, roughness:0.28 })
+  );
+  vrm.position.set(0.3, 4.4, z);
+  mobo.add(vrm);
+}
+
+// Ranuras PCIe (se ven las dos donde entran las GPU)
+for (const y of [2.6, -1.0]) {
+  const slot = new THREE.Mesh(
+    new THREE.BoxGeometry(0.42, 0.3, 5.4),
+    mat(0x1d2a3f, { metalness:0.7, roughness:0.4 })
+  );
+  slot.position.set(0.34, y, -1.2);
+  mobo.add(slot);
+}
+
+pieza(mobo, 'mobo',
+  { x: -3.7, y: 9.5, z: -1.2 },
+  { x: -7.4, y: 10.0, z: -1.2 });
+
+/* -------------------------------------------------------------------------
+   2.4 CPU — encapsulado cuadrado bajo el bloque del AIO
+   ------------------------------------------------------------------------- */
+const cpu = new THREE.Group();
+
+const chip = new THREE.Mesh(
+  new THREE.BoxGeometry(0.5, 2.0, 2.0),
+  mat(0xd7dfe9, { metalness:0.95, roughness:0.18 })
+);
+cpu.add(chip);
+
+const ihs = new THREE.Mesh(
+  new THREE.BoxGeometry(0.62, 1.35, 1.35),
+  mat(0xb9c6dd, { metalness:1.0, roughness:0.12 })
+);
+ihs.position.x = 0.16;
+cpu.add(ihs);
+
+pieza(cpu, 'cpu',
+  { x: -3.15, y: 12.6, z: -1.0 },
+  { x: -6.6, y: 14.2, z: 4.6 });
+
+/* -------------------------------------------------------------------------
+   2.5 REFRIGERACIÓN LÍQUIDA AIO 360mm
+   El radiador se representa como 3 cilindros en fila (los 3 ventiladores)
+   más la bomba/bloque sobre la CPU y dos mangueras.
+   ------------------------------------------------------------------------- */
+const aio = new THREE.Group();
+
+// Radiador (marco)
+const radiador = new THREE.Mesh(
+  new THREE.BoxGeometry(8.4, 0.45, 3.0),
+  mat(0x1a2436, { metalness:0.85, roughness:0.4 })
+);
+radiador.position.set(0, 0, 0);
+aio.add(radiador);
+
+// 3 cilindros en fila = los tres ventiladores del radiador
+const aspasAIO = [];
+for (const x of [-2.7, 0, 2.7]) {
+  const fan = new THREE.Mesh(
+    new THREE.CylinderGeometry(1.18, 1.18, 0.5, 24),
+    mat(0x2a3a52, { metalness:0.7, roughness:0.45 })
+  );
+  fan.position.set(x, -0.42, 0);
+  aio.add(fan);
+  aspasAIO.push(fan);
+
+  const buje = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.34, 0.34, 0.6, 18),
+    mat(0x4a5b78, { metalness:0.8, roughness:0.35 })
+  );
+  buje.position.set(x, -0.45, 0);
+  aio.add(buje);
+}
+
+// Bloque de la bomba sobre el socket del CPU
+const bomba = new THREE.Mesh(
+  new THREE.BoxGeometry(1.9, 1.25, 1.9),
+  mat(0x27324a, { metalness:0.9, roughness:0.25 })
+);
+bomba.position.set(-3.1, -7.6, 0.2);
+aio.add(bomba);
+
+const anillo = new THREE.Mesh(
+  new THREE.TorusGeometry(0.62, 0.09, 12, 32),
+  new THREE.MeshBasicMaterial({ color: 0x38e0c8 })
+);
+anillo.position.set(-3.1, -8.25, 0.2);
+anillo.rotation.x = Math.PI / 2;
+aio.add(anillo);
+
+// Mangueras (cilindros finos curvados por posición/rotación)
+for (const dz of [-0.35, 0.35]) {
+  const manga = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.16, 0.16, 8.6, 12),
+    mat(0x151d2b, { metalness:0.4, roughness:0.8 })
+  );
+  manga.position.set(-1.6, -4.1, dz);
+  manga.rotation.z = Math.PI / 2.35;
+  aio.add(manga);
+}
+
+pieza(aio, 'aio',
+  { x: -0.3, y: 18.0, z: -1.0 },
+  { x: -0.3, y: 19.6, z: -1.0 });
+
+/* -------------------------------------------------------------------------
+   2.6 MEMORIA RAM — 2 módulos DDR5 junto al socket
+   ------------------------------------------------------------------------- */
+const ram = new THREE.Group();
+
+for (const z of [-0.75, 0.55]) {
+  const modulo = new THREE.Mesh(
+    new THREE.BoxGeometry(0.42, 4.4, 0.62),
+    mat(0x1c2740, { metalness:0.7, roughness:0.4 })
+  );
+  modulo.position.set(0, 0, z);
+  ram.add(modulo);
+
+  // Difusor/disipador del módulo
+  const difusor = new THREE.Mesh(
+    new THREE.BoxGeometry(0.52, 3.2, 0.72),
+    mat(0x30405c, { metalness:0.95, roughness:0.22 })
+  );
+  difusor.position.set(0, 0.15, z);
+  ram.add(difusor);
+
+  // Tira luminosa
+  const luz = new THREE.Mesh(
+    new THREE.BoxGeometry(0.1, 3.0, 0.16),
+    new THREE.MeshBasicMaterial({ color: 0x7de3ff })
+  );
+  luz.position.set(0.3, 0.15, z);
+  ram.add(luz);
+}
+
+pieza(ram, 'ram',
+  { x: -3.05, y: 14.4, z: 2.3 },
+  { x: -3.05, y: 17.4, z: 5.6 });
+
+/* -------------------------------------------------------------------------
+   2.7 ALMACENAMIENTO — 2 discos NVMe M.2 (barras finas sobre la placa)
+   ------------------------------------------------------------------------- */
+const nvme = new THREE.Group();
+
+for (const y of [4.0, 2.2]) {
+  const ssd = new THREE.Mesh(
+    new THREE.BoxGeometry(0.22, 0.85, 4.0),
+    mat(0x222c40, { metalness:0.6, roughness:0.5 })
+  );
+  ssd.position.set(0, y, 1.0);
+  nvme.add(ssd);
+
+  // Etiqueta superior del disco
+  const etiqueta = new THREE.Mesh(
+    new THREE.BoxGeometry(0.26, 0.5, 3.0),
+    mat(0x9aa9c0, { metalness:0.4, roughness:0.7 })
+  );
+  etiqueta.position.set(0.03, y, 1.2);
+  nvme.add(etiqueta);
+
+  // LED de actividad
+  const led = new THREE.Mesh(
+    new THREE.BoxGeometry(0.3, 0.14, 0.14),
+    new THREE.MeshBasicMaterial({ color: 0x6ee7a8 })
+  );
+  led.position.set(0.04, y - 0.38, -0.6);
+  nvme.add(led);
+}
+
+pieza(nvme, 'nvme',
+  { x: -3.35, y: 9.4, z: 2.1 },
+  { x: -3.35, y: 12.4, z: 6.8 });
+
+/* -------------------------------------------------------------------------
+   2.8 FUENTE DE PODER (PSU) — caja con rejilla y ventilador en el fondo
+   ------------------------------------------------------------------------- */
+const psu = new THREE.Group();
+
+const chasisPsu = new THREE.Mesh(
+  new THREE.BoxGeometry(7.4, 6.0, 7.2),
+  mat(0x1a2233, { metalness:0.82, roughness:0.42 })
+);
+psu.add(chasisPsu);
+
+// Rejilla frontal (aro + aspas del ventilador de la fuente)
+const aroPsu = new THREE.Mesh(
+  new THREE.TorusGeometry(2.05, 0.16, 10, 40),
+  mat(0x3a4861, { metalness:0.9, roughness:0.3 })
+);
+aroPsu.position.set(0, 0, 3.62);
+psu.add(aroPsu);
+
+const aspasPsu = [];
+for (let i = 0; i < 7; i++) {
+  const pala = new THREE.Mesh(
+    new THREE.BoxGeometry(1.7, 0.1, 0.5),
+    mat(0x4d5f7d, { metalness:0.6, roughness:0.5 })
+  );
+  pala.position.set(0, 0, 3.55);
+  pala.rotation.z = (i / 7) * Math.PI * 2;
+  pala.translateX(0.9);
+  psu.add(pala);
+  aspasPsu.push(pala);
+}
+
+const bujePsu = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.5, 0.5, 0.5, 18),
+  mat(0x2a3448, { metalness:0.85, roughness:0.3 })
+);
+bujePsu.rotation.x = Math.PI / 2;
+bujePsu.position.set(0, 0, 3.6);
+psu.add(bujePsu);
+
+// Conectores modulares traseros
+for (const y of [-1.7, -0.6, 0.5, 1.6]) {
+  const puerto = new THREE.Mesh(
+    new THREE.BoxGeometry(0.55, 0.5, 0.3),
+    mat(0x0e1626, { metalness:0.5, roughness:0.6 })
+  );
+  puerto.position.set(-3.75, y, 0);
+  psu.add(puerto);
+}
+
+pieza(psu, 'psu',
+  { x: 0.2, y: 3.4, z: -0.3 },
+  { x: 0.2, y: 3.0, z: -7.6 });
+
+/* -------------------------------------------------------------------------
+   2.9 VENTILACIÓN ADICIONAL — 3 ventiladores frontales que giran
+   ------------------------------------------------------------------------- */
+const fans = [];
+const ventiladores = new THREE.Group();
+
+for (const y of [6.0, 10.4, 14.8]) {
+  const marco = new THREE.Mesh(
+    new THREE.BoxGeometry(2.5, 2.5, 0.7),
+    mat(0x1c2536, { metalness:0.8, roughness:0.45 })
+  );
+  marco.position.set(0, y, 0);
+  ventiladores.add(marco);
+
+  const rotor = new THREE.Mesh(
+    new THREE.CylinderGeometry(1.0, 1.0, 0.22, 24),
+    mat(0x2d3a52, { metalness:0.7, roughness:0.4 })
+  );
+  rotor.rotation.x = Math.PI / 2;
+  rotor.position.set(0, y, 0.15);
+  ventiladores.add(rotor);
+  fans.push(rotor);
+
+  // 7 palas por ventilador para que el giro se note
+  for (let i = 0; i < 7; i++) {
+    const pala = new THREE.Mesh(
+      new THREE.BoxGeometry(0.85, 0.12, 0.34),
+      mat(0x55688a, { metalness:0.55, roughness:0.55 })
+    );
+    pala.position.set(0, y, 0.2);
+    pala.rotation.z = (i / 7) * Math.PI * 2;
+    pala.translateX(0.45);
+    ventiladores.add(pala);
+    fans.push(pala);
+  }
+}
+
+pieza(ventiladores, 'fans',
+  { x: -4.05, y: 0, z: 0 },
+  { x: -7.2, y: 1.2, z: 6.6 });
+
+/* -------------------------------------------------------------------------
+   2.10 UPS — módulo externo, fuera del gabinete (a la izquierda)
+   ------------------------------------------------------------------------- */
+const ups = new THREE.Group();
+
+const cuerpoUps = new THREE.Mesh(
+  new THREE.BoxGeometry(7.0, 8.4, 6.4),
+  mat(0x1b2434, { metalness:0.8, roughness:0.45 })
+);
+cuerpoUps.position.y = 4.2;
+ups.add(cuerpoUps);
+
+// Panel frontal con pantalla
+const panelUps = new THREE.Mesh(
+  new THREE.BoxGeometry(5.6, 2.6, 0.22),
+  mat(0x0e1626, { metalness:0.6, roughness:0.4 })
+);
+panelUps.position.set(0, 6.6, 3.28);
+ups.add(panelUps);
+
+const pantallaUps = new THREE.Mesh(
+  new THREE.PlaneGeometry(2.6, 1.2),
+  new THREE.MeshBasicMaterial({ color: 0x38e0c8, transparent:true, opacity:0.85 })
+);
+pantallaUps.position.set(-1.2, 6.8, 3.42);
+ups.add(pantallaUps);
+
+// Botón de encendido
+const botonUps = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.3, 0.3, 0.22, 18),
+  new THREE.MeshBasicMaterial({ color: 0xffb545 })
+);
+botonUps.rotation.x = Math.PI / 2;
+botonUps.position.set(1.6, 6.8, 3.42);
+ups.add(botonUps);
+
+// Tomas de salida protegidas
+for (const x of [-2.1, -0.7, 0.7, 2.1]) {
+  const toma = new THREE.Mesh(
+    new THREE.BoxGeometry(0.72, 0.9, 0.24),
+    mat(0x2a3448, { metalness:0.6, roughness:0.5 })
+  );
+  toma.position.set(x, 3.4, 3.3);
+  ups.add(toma);
+}
+
+// Cable hacia el servidor
+const cableUps = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.13, 0.13, 7.0, 10),
+  mat(0x101724, { metalness:0.3, roughness:0.9 })
+);
+cableUps.position.set(3.9, 4.6, 0.4);
+cableUps.rotation.z = Math.PI / 2.1;
+ups.add(cableUps);
+
+pieza(ups, 'ups',
+  { x: -12.6, y: 0, z: 1.4 },
+  { x: -14.6, y: 0, z: 5.0 });
+
+/* -------------------------------------------------------------------------
+   2.11 SWITCH DE RED + PATCH CORDS — módulo externo (a la derecha)
+   ------------------------------------------------------------------------- */
+const lan = new THREE.Group();
+
+const chasisSwitch = new THREE.Mesh(
+  new THREE.BoxGeometry(7.4, 1.9, 5.0),
+  mat(0x1a2333, { metalness:0.85, roughness:0.4 })
+);
+chasisSwitch.position.y = 4.6;
+lan.add(chasisSwitch);
+
+// Fila de puertos RJ45
+for (let i = 0; i < 8; i++) {
+  const puerto = new THREE.Mesh(
+    new THREE.BoxGeometry(0.62, 0.42, 0.3),
+    mat(0x0d1424, { metalness:0.5, roughness:0.6 })
+  );
+  puerto.position.set(-2.8 + i * 0.8, 4.4, 2.55);
+  lan.add(puerto);
+
+  const led = new THREE.Mesh(
+    new THREE.BoxGeometry(0.22, 0.1, 0.1),
+    new THREE.MeshBasicMaterial({ color: 0x6ee7a8 })
+  );
+  led.position.set(-2.8 + i * 0.8, 4.78, 2.62);
+  lan.add(led);
+}
+
+// Patch cords Cat6A (curvas aproximadas con cilindros inclinados)
+const coloresCable = [0x4c8dff, 0xffb545, 0x6ee7a8, 0xff8f6b];
+coloresCable.forEach((col, i) => {
+  const cord = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.1, 0.1, 4.6, 8),
+    mat(col, { metalness:0.25, roughness:0.85 })
+  );
+  cord.position.set(-2.4 + i * 0.9, 2.7, 3.1);
+  cord.rotation.x = Math.PI / 3.1;
+  cord.rotation.z = 0.12 * (i - 1.5);
+  lan.add(cord);
+});
+
+// Cables de enlace hacia el servidor
+for (const z of [-1.2, 0.9]) {
+  const enlace = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.12, 0.12, 6.2, 8),
+    mat(0x2c3a52, { metalness:0.3, roughness:0.85 })
+  );
+  enlace.position.set(-4.2, 4.6, z);
+  enlace.rotation.z = Math.PI / 2.05;
+  lan.add(enlace);
+}
+
+// Soportes / patas del switch
+for (const x of [-3.1, 3.1]) {
+  const pata = new THREE.Mesh(
+    new THREE.BoxGeometry(0.5, 3.7, 4.2),
+    mat(0x151d2c, { metalness:0.7, roughness:0.5 })
+  );
+  pata.position.set(x, 1.9, 0);
+  lan.add(pata);
+}
+
+pieza(lan, 'lan',
+  { x: 12.4, y: 0, z: 1.0 },
+  { x: 14.2, y: 0.8, z: 5.4 });
+
+/* -------------------------------------------------------------------------
+   3. INTERACTIVIDAD
+   ------------------------------------------------------------------------- */
+
+/** Busca en el JSON el componente por id. */
+const datosDe = id => COMPONENTES.find(c => c.id === id);
+
+/* --- 3.1 Presupuesto: total y desglose por componente -------------------- */
+const elTotal = document.getElementById('budgetTotal');
+const elLista = document.getElementById('budgetList');
+document.getElementById('footerTotal').innerHTML = cop(PRESUPUESTO_COP) + '<small>COP</small>';
+elTotal.textContent = cop(PRESUPUESTO_COP);
+
+// Fila por componente (una por pieza; las GPU suman su costo dos veces)
+const filasPresupuesto = {};
+for (const c of COMPONENTES) {
+  const fila = document.createElement('div');
+  fila.className = 'budget-row';
+  fila.dataset.id = c.id;
+  fila.innerHTML = `<span class="r-name"></span><span class="r-cost"></span>`;
+  fila.querySelector('.r-name').textContent = c.nombre;
+  fila.querySelector('.r-cost').textContent = cop(c.costo_cop);
+  elLista.appendChild(fila);
+  filasPresupuesto[c.id] = fila;
+}
+
+// Fila de cierre: margen de imprevistos que completa el presupuesto oficial.
+// No está asociada a ninguna pieza 3D, por eso no entra en filasPresupuesto.
+if (MARGEN_IMPREVISTOS > 0) {
+  const fila = document.createElement('div');
+  fila.className = 'budget-row';
+  fila.innerHTML = '<span class="r-name"></span><span class="r-cost"></span>';
+  fila.querySelector('.r-name').textContent = 'Margen de imprevistos';
+  fila.querySelector('.r-cost').textContent = cop(MARGEN_IMPREVISTOS);
+  elLista.appendChild(fila);
+}
+
+/** Resalta la fila del presupuesto asociada a un componente. */
+function resaltarPresupuesto(id) {
+  for (const k in filasPresupuesto) {
+    filasPresupuesto[k].classList.toggle('hl', k === id);
+  }
+}
+
+/* --- 3.2 Tooltip de hover ------------------------------------------------ */
+const tip      = document.getElementById('tip');
+const tipName  = document.getElementById('tipName');
+const tipModel = document.getElementById('tipModel');
+const tipJust  = document.getElementById('tipJust');
+const tipCost  = document.getElementById('tipCost');
+
+function mostrarTooltip(c, x, y) {
+  tipName.textContent  = c.nombre;
+  tipModel.textContent = c.modelo;
+  tipJust.textContent  = c.justificacion;
+  tipCost.textContent  = cop(c.costo_cop) + ' COP';
+  tip.classList.add('show');
+  tip.setAttribute('aria-hidden', 'false');
+  posicionarTooltip(x, y);
+}
+
+/** Mantiene el tooltip dentro del visor. */
+function posicionarTooltip(x, y) {
+  const r = stage.getBoundingClientRect();
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  const px = Math.min(Math.max(x, w / 2 + 8), r.width  - w / 2 - 8);
+  const py = Math.max(y, h + 18);
+  tip.style.left = px + 'px';
+  tip.style.top  = py + 'px';
+}
+
+function ocultarTooltip() {
+  tip.classList.remove('show');
+  tip.setAttribute('aria-hidden', 'true');
+}
+
+/* --- 3.3 Panel lateral de ficha técnica ---------------------------------- */
+const panel       = document.getElementById('panel');
+const overlay     = document.getElementById('overlay');
+const panelTitle  = document.getElementById('panelTitle');
+const panelKicker = document.getElementById('panelKicker');
+const panelBody   = document.getElementById('panelBody');
+
+function abrirPanel(id) {
+  const c = datosDe(id);
+  if (!c) return;
+
+  panelKicker.textContent = 'Ficha técnica';
+  panelTitle.textContent  = c.nombre;
+
+  // Ficha: modelo, justificación, costo y notas de detalle
+  panelBody.innerHTML = '';
+
+  const bloqueModelo = document.createElement('div');
+  bloqueModelo.className = 'ficha-block';
+  bloqueModelo.innerHTML = '<div class="ficha-label">Modelo recomendado</div>';
+  const pm = document.createElement('div');
+  pm.className = 'panel-model';
+  pm.textContent = c.modelo;
+  bloqueModelo.appendChild(pm);
+  panelBody.appendChild(bloqueModelo);
+
+  const bloqueJust = document.createElement('div');
+  bloqueJust.className = 'ficha-block';
+  bloqueJust.innerHTML = '<div class="ficha-label">Por qué se eligió</div>';
+  const pj = document.createElement('div');
+  pj.className = 'ficha-val';
+  pj.textContent = c.justificacion;
+  bloqueJust.appendChild(pj);
+  panelBody.appendChild(bloqueJust);
+
+  const bloqueCosto = document.createElement('div');
+  bloqueCosto.className = 'ficha-block';
+  bloqueCosto.innerHTML = '<div class="ficha-label">Costo estimado</div>';
+  const pc = document.createElement('div');
+  pc.className = 'ficha-cost';
+  pc.textContent = cop(c.costo_cop) + ' COP';
+  bloqueCosto.appendChild(pc);
+  panelBody.appendChild(bloqueCosto);
+
+  const bloqueNotas = document.createElement('div');
+  bloqueNotas.className = 'ficha-block';
+  bloqueNotas.innerHTML = '<div class="ficha-label">Notas de montaje</div>';
+  const ul = document.createElement('ul');
+  ul.className = 'mlist';
+  for (const d of c.detalle) {
+    const li = document.createElement('li');
+    li.textContent = d;
+    ul.appendChild(li);
+  }
+  bloqueNotas.appendChild(ul);
+  panelBody.appendChild(bloqueNotas);
+
+  panel.classList.add('open');
+  panel.setAttribute('aria-hidden', 'false');
+  overlay.classList.add('show');
+  resaltarPresupuesto(id);
+}
+
+function cerrarPanel() {
+  panel.classList.remove('open');
+  panel.setAttribute('aria-hidden', 'true');
+  overlay.classList.remove('show');
+  resaltarPresupuesto(null);
+}
+
+document.getElementById('panelClose').addEventListener('click', cerrarPanel);
+overlay.addEventListener('click', cerrarPanel);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarPanel(); });
+
+/* --- 3.4 Raycaster: hover y clic sobre las piezas ------------------------ */
+const raycaster = new THREE.Raycaster();
+const puntero   = new THREE.Vector2();
+let   hoverId   = null;      // id del componente bajo el cursor
+let   activoId  = null;      // id resaltado actualmente (hover o panel)
+
+/**
+ * Devuelve el objeto interactivo más cercano a la posición del puntero.
+ * Como las GPU están en dos grupos distintos pero comparten id, se busca
+ * hacia arriba en la jerarquía hasta encontrar un objeto con userData.id.
+ */
+function objetoBajoPuntero(clientX, clientY) {
+  const r = stage.getBoundingClientRect();
+  puntero.x =  ((clientX - r.left) / r.width)  * 2 - 1;
+  puntero.y = -((clientY - r.top)  / r.height) * 2 + 1;
+  raycaster.setFromCamera(puntero, camera);
+
+  // Se intersectan solo los grupos de piezas (recursive = true)
+  const impactos = raycaster.intersectObjects(interactivos, true);
+  if (!impactos.length) return null;
+
+  // Se sube por los padres hasta el grupo registrado
+  let o = impactos[0].object;
+  while (o && !o.userData.id) o = o.parent;
+  return o || null;
+}
+
+/** Aplica el efecto de resaltado (glow) a un componente. */
+function resaltar(obj, on) {
+  if (!obj.userData.mats) return;
+  for (const reg of obj.userData.mats) {
+    const tieneEmissive = !!reg.m.emissive;
+    if (on) {
+      // Se ilumina el material con su propio color para lograr el glow
+      if (tieneEmissive) {
+        reg.m.emissive.copy(reg.m.color);
+        reg.m.emissiveIntensity = 0.85;
+      } else {
+        reg.m.color.offsetHSL(0, 0, 0.18);   // los LED simplemente se aclaran
+      }
+    } else {
+      reg.m.color.copy(reg.color);
+      if (tieneEmissive) {
+        reg.m.emissive.copy(reg.emissive);
+        reg.m.emissiveIntensity = reg.ei;
+      }
+    }
+  }
+  obj.userData.hovered = on;
+}
+
+/** Restaura todos los objetos y deja resaltado solo el objetivo. */
+function aplicarResaltado(id) {
+  activoId = id;
+  for (const obj of interactivos) {
+    resaltar(obj, obj.userData.id === id);
+  }
+  resaltarPresupuesto(id);
+}
+
+renderer.domElement.addEventListener('pointermove', e => {
+  // Mientras se arrastra para rotar no se evalúa el hover
+  if (e.buttons !== 0) { if (hoverId) { hoverId = null; aplicarResaltado(null); ocultarTooltip(); } return; }
+
+  const obj = objetoBajoPuntero(e.clientX, e.clientY);
+  const id  = obj ? obj.userData.id : null;
+
+  if (id !== hoverId) {
+    hoverId = id;
+    aplicarResaltado(id);
+    if (id) {
+      const r = stage.getBoundingClientRect();
+      mostrarTooltip(datosDe(id), e.clientX - r.left, e.clientY - r.top);
+      renderer.domElement.style.cursor = 'pointer';
+    } else {
+      ocultarTooltip();
+      renderer.domElement.style.cursor = 'grab';
+    }
+  } else if (id) {
+    // El tooltip sigue al cursor
+    const r = stage.getBoundingClientRect();
+    posicionarTooltip(e.clientX - r.left, e.clientY - r.top);
+  }
+});
+
+renderer.domElement.addEventListener('pointerleave', () => {
+  hoverId = null;
+  aplicarResaltado(null);
+  ocultarTooltip();
+  renderer.domElement.style.cursor = 'grab';
+});
+
+// Clic: se distingue de un arrastre midiendo el desplazamiento del puntero
+let downX = 0, downY = 0;
+renderer.domElement.addEventListener('pointerdown', e => { downX = e.clientX; downY = e.clientY; });
+renderer.domElement.addEventListener('pointerup', e => {
+  const movido = Math.hypot(e.clientX - downX, e.clientY - downY);
+  if (movido > 6) return;   // fue un arrastre de órbita, no un clic
+  const obj = objetoBajoPuntero(e.clientX, e.clientY);
+  if (obj) abrirPanel(obj.userData.id);
+});
+
+/* --- 3.5 Vista explosionada / ensamblada (lerp simple, sin librerías) ---- */
+let explosionado = true;      // arranca despiezado para que se vea todo
+const objetivos = new Map();  // posición destino de cada pieza
+
+/** Define hacia dónde debe viajar cada pieza. */
+function fijarObjetivos(explota) {
+  for (const obj of animables) {
+    objetivos.set(obj, explota ? obj.userData.exp : obj.userData.home);
+  }
+}
+
+const btnExplode = document.getElementById('btnExplode');
+btnExplode.addEventListener('click', () => {
+  explosionado = !explosionado;
+  fijarObjetivos(explosionado);
+  btnExplode.classList.toggle('on', explosionado);
+  btnExplode.setAttribute('aria-pressed', String(explosionado));
+  const txt = btnExplode.querySelector('.t');
+  if (txt) txt.textContent = explosionado ? 'Vista explosionada' : 'Vista ensamblada';
+});
+
+const btnSpin = document.getElementById('btnSpin');
+btnSpin.addEventListener('click', () => {
+  controls.autoRotate = !controls.autoRotate;
+  btnSpin.classList.toggle('on', controls.autoRotate);
+  btnSpin.setAttribute('aria-pressed', String(controls.autoRotate));
+});
+
+document.getElementById('btnReset').addEventListener('click', () => {
+  camera.position.set(19.5, 14.0, 26.0);
+  controls.target.set(0, 8.4, 0);
+  controls.update();
+});
+
+/* --- 3.6 Bucle de render y animación ------------------------------------- */
+const reloj = new THREE.Clock();
+
+function animar() {
+  requestAnimationFrame(animar);
+  const dt = reloj.getDelta();
+  const t  = reloj.elapsedTime;
+
+  // Lerp de las piezas hacia su posición objetivo (vista ensamblada/explosionada)
+  for (const obj of animables) {
+    const destino = objetivos.get(obj);
+    if (destino) obj.position.lerp(destino, Math.min(1, dt * 3.4));
+  }
+
+  // Giro continuo de los ventiladores (GPU, radiador, chasis y fuente)
+  const v = dt * 6.5;
+  for (const f of fans)          f.rotation.z += v * 0.55;
+  for (const f of aspasAIO)      f.rotation.y += v * 0.45;
+  for (const f of aspasPsu)      f.rotation.z += v * 0.4;
+  for (const f of gpu0.aspas)    f.rotation.z += v * 0.5;
+  for (const f of gpu1.aspas)    f.rotation.z += v * 0.5;
+
+  // Latido suave de los aros luminosos (anillo del AIO)
+  anillo.material.color.setHSL(0.48, 0.7, 0.45 + Math.sin(t * 1.6) * 0.09);
+
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+/* --- 3.7 Ajuste responsive del lienzo ------------------------------------ */
+function redimensionar() {
+  const w = stage.clientWidth, h = stage.clientHeight;
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  renderer.setSize(w, h);
+}
+window.addEventListener('resize', redimensionar);
+
+/* --- 3.8 Arranque -------------------------------------------------------- */
+memorizarColores();
+fijarObjetivos(true);       // arranca en vista explosionada
+redimensionar();
+animar();
+
+/* Ganchos de depuración: permiten auditar el encuadre y las piezas desde
+   la consola del navegador sin alterar el comportamiento de la página. */
+window.__PIEZAS = interactivos;
+window.__CAMARA = camera;
+window.__ESCENA = scene;
+
+/* --- 3.9 Aparición de secciones al hacer scroll -------------------------- */
+const elementosReveal = document.querySelectorAll('.reveal');
+if ('IntersectionObserver' in window) {
+  const io = new IntersectionObserver(entradas => {
+    for (const e of entradas) {
+      if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+    }
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+  elementosReveal.forEach(el => io.observe(el));
+} else {
+  elementosReveal.forEach(el => el.classList.add('in'));   // fallback sin IO
+}
+</script>
+</body>
+</html>
