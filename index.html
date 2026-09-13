@@ -357,6 +357,7 @@ h2{ font-size:clamp(23px,3.2vw,36px); margin-bottom:12px; }
       <span>🖱️ Arrastrar para rotar</span>
       <span>🔍 Scroll para acercar</span>
       <span class="hide-sm">👆 Clic en una pieza para ver su ficha</span>
+      <span class="hide-sm">🔎 Doble clic para acercar a una pieza</span>
     </div>
   </div>
 </section>
@@ -661,12 +662,85 @@ camera.position.set(19.5, 14.0, 26.0);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;      // inercia suave al soltar
 controls.dampingFactor = 0.06;
-controls.minDistance   = 12;
-controls.maxDistance   = 78;
+
+/* Zoom
+   - El zoom se gestiona a mano (ver más abajo), así que se desactiva el que
+     trae OrbitControls (enableZoom = false) para no duplicar el movimiento.
+   - Límites medidos sobre la escena real (vista explosionada: 28.8 uds de
+     ancho, 20 de alto; la cámara arranca a 33 uds del objetivo):
+       · DIST_MIN 6  -> una sola pieza (una GPU mide 6.4 uds) llena el cuadro.
+       · DIST_MAX 55 -> a esa distancia la escena aún ocupa el 34 % del ancho
+         visible; más lejos sobra vacío y el equipo deja de leerse.
+     Con un paso del 8.5 % por muesca, el recorrido completo son 21 muescas
+     hacia adentro y 7 hacia afuera: la diferencia es inherente al zoom
+     proporcional, donde acercarse recorre un factor mayor que alejarse. */
+const DIST_MIN = 6;
+const DIST_MAX = 55;
+controls.minDistance   = DIST_MIN;
+controls.maxDistance   = DIST_MAX;
+controls.enableZoom    = false;     // el dolly se aplica con nuestra amortiguación
 controls.maxPolarAngle = Math.PI * 0.52;   // no permite ver por debajo del piso
 controls.target.set(0, 8.4, 0);
 controls.autoRotate = true;
 controls.autoRotateSpeed = 0.55;
+
+/* Amortiguación propia del zoom (dolly inercial).
+   OrbitControls sólo amortigua la rotación y el paneo: el dolly se aplica de
+   golpe. Para que el zoom se sienta igual de fluido que el giro, se intercepta
+   la rueda, se acumula un factor de escala y se aplica de forma fraccionada en
+   cada frame: el acercamiento arranca suave, gana velocidad y frena solo.
+
+   Constantes elegidas midiendo sobre la escena (a 60 fps):
+     · PASO_POR_PIXEL 1.0009 -> una muesca de rueda (~100 px) acerca un 8.6 %,
+       que es lo que se siente preciso sin volverse lento.
+     · BASE_SUAVIZADO 1e-6  -> el recorrido de una muesca se asienta en ~330 ms.
+       Valores más altos (0.0025 = 1.2 s) se sienten "flotantes" y con retraso. */
+const PASO_POR_PIXEL = 1.0009;
+const BASE_SUAVIZADO = 1e-6;
+let zoomObjetivo = 1;     // factor de escala acumulado pendiente de aplicar
+
+renderer.domElement.addEventListener('wheel', e => {
+  e.preventDefault();     // anula el scroll de la página y el zoom nativo
+
+  // Se normaliza el delta: las ruedas dentadas emiten ~100 por muesca y los
+  // trackpads emiten valores pequeños y frecuentes. Sin esto, el trackpad se
+  // siente lentísimo y la rueda dentada da saltos enormes.
+  const normalizado = e.deltaMode === 1 ? e.deltaY * 16   // por líneas
+                    : e.deltaMode === 2 ? e.deltaY * 100  // por páginas
+                    : e.deltaY;                           // por píxeles
+  const acotado = Math.max(-120, Math.min(120, normalizado));
+
+  // Factor multiplicativo: acercar y alejar recorren la misma proporción, así
+  // el zoom se siente uniforme tanto de lejos como de cerca, y el recorrido
+  // de una muesca es siempre el mismo porcentaje de la distancia actual.
+  zoomObjetivo *= Math.pow(PASO_POR_PIXEL, acotado);
+}, { passive: false });
+
+/** Aplica el zoom pendiente con suavizado y respeta los límites de distancia. */
+function aplicarZoomSuave(dt) {
+  if (Math.abs(zoomObjetivo - 1) < 0.001) { zoomObjetivo = 1; return; }
+
+  // Fracción del recorrido que se consume en este frame. La exponencial por dt
+  // mantiene la misma duración aunque el framerate varíe (30, 60 o 120 Hz).
+  const paso = 1 - Math.pow(BASE_SUAVIZADO, Math.min(dt, 0.05));
+  const factor = 1 + (zoomObjetivo - 1) * paso;
+
+  // Se traslada la cámara hacia/desde el objetivo sin tocar su orientación.
+  const offset = camera.position.clone().sub(controls.target);
+  const distanciaDeseada = offset.length() * factor;
+  const distanciaFinal = Math.max(DIST_MIN, Math.min(DIST_MAX, distanciaDeseada));
+
+  offset.setLength(distanciaFinal);
+  camera.position.copy(controls.target).add(offset);
+
+  // Si el paso no se pudo aplicar completo (se topó con un límite), se cancela
+  // el resto acumulado para que el zoom no quede "cargado" al invertir el giro.
+  if (distanciaFinal === distanciaDeseada) {
+    zoomObjetivo /= factor;
+  } else {
+    zoomObjetivo = 1;
+  }
+}
 
 // --- Iluminación ----------------------------------------------------------
 scene.add(new THREE.HemisphereLight(0x8fb6ff, 0x0a1020, 1.15));
@@ -1550,6 +1624,49 @@ renderer.domElement.addEventListener('pointerup', e => {
   if (obj) abrirPanel(obj.userData.id);
 });
 
+/* Doble clic sobre una pieza: acerca la cámara a ella.
+   En un configurador se espera poder "entrar" a un componente, así que el
+   doble clic mueve el objetivo al centro de la pieza y ajusta la distancia
+   para verla completa. Se reutiliza el mismo zoom suavizado. */
+renderer.domElement.addEventListener('dblclick', e => {
+  const obj = objetoBajoPuntero(e.clientX, e.clientY);
+  if (!obj) return;
+
+  // Centro real de la pieza en coordenadas de mundo
+  const centro = new THREE.Box3().setFromObject(obj).getCenter(new THREE.Vector3());
+
+  // Tamaño de la pieza -> distancia a la que entra completa en el cuadro
+  const caja = new THREE.Box3().setFromObject(obj);
+  const tam = caja.getSize(new THREE.Vector3()).length();
+  const fovRad = THREE.MathUtils.degToRad(camera.fov);
+  const distancia = Math.max(DIST_MIN, Math.min(DIST_MAX, (tam * 0.85) / Math.tan(fovRad / 2)));
+
+  controls.target.copy(centro);
+
+  // Se reorienta la cámara conservando el ángulo actual de observación
+  const direccion = camera.position.clone().sub(centro).normalize();
+  camera.position.copy(centro).add(direccion.multiplyScalar(distancia));
+
+  zoomObjetivo = 1;      // cancela cualquier dolly pendiente
+  controls.update();
+});
+
+/* Zoom por teclado (+ / - / 0), útil con trackpad o para accesibilidad.
+   Reutiliza el mismo acumulador, así el movimiento es idéntico al de la rueda. */
+document.addEventListener('keydown', e => {
+  // No interferir cuando el foco está en un control de la interfaz
+  const t = e.target;
+  if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) return;
+
+  if (e.key === '+' || e.key === '=' || e.key === 'Add') {
+    zoomObjetivo *= Math.pow(PASO_POR_PIXEL, -100);   // una muesca hacia adentro
+  } else if (e.key === '-' || e.key === '_' || e.key === 'Subtract') {
+    zoomObjetivo *= Math.pow(PASO_POR_PIXEL, 100);    // una muesca hacia afuera
+  } else if (e.key === '0') {
+    document.getElementById('btnReset').click();
+  }
+});
+
 /* --- 3.5 Vista explosionada / ensamblada (lerp simple, sin librerías) ---- */
 let explosionado = true;      // arranca despiezado para que se vea todo
 const objetivos = new Map();  // posición destino de cada pieza
@@ -1581,6 +1698,7 @@ btnSpin.addEventListener('click', () => {
 document.getElementById('btnReset').addEventListener('click', () => {
   camera.position.set(19.5, 14.0, 26.0);
   controls.target.set(0, 8.4, 0);
+  zoomObjetivo = 1;      // descarta cualquier dolly pendiente
   controls.update();
 });
 
@@ -1609,6 +1727,7 @@ function animar() {
   // Latido suave de los aros luminosos (anillo del AIO)
   anillo.material.color.setHSL(0.48, 0.7, 0.45 + Math.sin(t * 1.6) * 0.09);
 
+  aplicarZoomSuave(dt);   // dolly inercial (debe ir antes de controls.update)
   controls.update();
   renderer.render(scene, camera);
 }
@@ -1633,6 +1752,7 @@ animar();
 window.__PIEZAS = interactivos;
 window.__CAMARA = camera;
 window.__ESCENA = scene;
+window.__CONTROLS = controls;
 
 /* --- 3.9 Aparición de secciones al hacer scroll -------------------------- */
 const elementosReveal = document.querySelectorAll('.reveal');
