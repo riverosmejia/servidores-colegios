@@ -5,203 +5,211 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Miniservidor de IA Escolar · Configurador 3D y Presupuesto</title>
 <meta name="description" content="Configurador 3D interactivo del miniservidor de IA para colegios en Colombia: componentes, función de cada pieza y presupuesto total estimado.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b1220'/%3E%3Cpath d='M16 5l9 5v12l-9 5-9-5V10z' fill='none' stroke='%2338e0c8' stroke-width='2'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 2 28 9v14L16 30 4 23V9z' fill='%230f766e'/%3E%3Cpath d='M11 16.5l3.5 3.5L21 13' stroke='%23fff' stroke-width='2.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 
-<!-- ===== Tipografías (Google Fonts) ===== -->
+<!-- ===== Tipografías: IBM Plex Sans + Mono (sistema de propuestas) ===== -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
 /* =========================================================================
    MINISERVIDOR DE IA ESCOLAR · Hoja de estilos
-   Paleta dark "tech": fondo azul-noche, acento cian/teal, violeta para GPU 1.
+   Superficie clara sobre el sistema de propuestas: fondo blanco, tinta
+   verde-oscura, acento teal y tipografía IBM Plex. El visor 3D también va
+   sobre fondo blanco para integrarse con la página.
    ========================================================================= */
 
 /* ---------- Tokens de diseño ---------- */
 :root{
-  --bg:        #070b14;   /* fondo principal */
-  --bg-2:      #0b1220;   /* superficies */
-  --bg-3:      #111c2e;   /* superficies elevadas */
-  --line:      #1e2c44;   /* bordes */
-  --line-2:    #2a3c5a;   /* bordes hover */
-  --tx:        #e8eef7;   /* texto principal */
-  --tx-2:      #9fb0c9;   /* texto secundario */
-  --tx-3:      #64758f;   /* texto muted */
-  --cyan:      #38e0c8;   /* acento principal */
-  --cyan-dim:  #1d8d80;
-  --blue:      #4c8dff;   /* GPU 0 */
-  --violet:    #a56cff;   /* GPU 1 */
-  --amber:     #ffb545;   /* advertencias */
-  --radius:    16px;
-  --radius-sm: 10px;
-  --font-d:    'Space Grotesk', system-ui, sans-serif;
-  --font-b:    'Inter', system-ui, sans-serif;
-  --shadow:    0 24px 60px -30px rgba(0,0,0,.9), 0 2px 8px rgba(0,0,0,.4);
-  --glow-cyan: 0 0 0 1px rgba(56,224,200,.45), 0 0 28px -4px rgba(56,224,200,.55);
+  --bg:           #ffffff;   /* fondo principal */
+  --bg-soft:      #f6f8f8;   /* secciones alternas y superficies */
+  --bg-accent:    #eef7f6;   /* fondo teal suave */
+  --ink:          #10201e;   /* texto principal */
+  --ink-2:        #33423f;   /* texto secundario */
+  --muted:        #64716e;   /* texto atenuado */
+  --line:         #e3e8e7;   /* bordes */
+  --line-strong:  #cdd6d4;   /* bordes acentuados */
+  --accent:       #0f766e;   /* teal principal */
+  --accent-strong:#0b5e58;   /* teal hover */
+  --accent-soft:  #e6f4f2;   /* teal muy suave */
+  --accent-ring:  rgba(15,118,110,.25);
+  --ok:           #1a7f4e;
+  --warn:         #b45309;
+  --violet:       #7c3aed;   /* GPU 1 (visual) */
+  --blue:         #1d4ed8;   /* GPU 0 (razonamiento) */
+  --radius:       14px;
+  --radius-sm:    9px;
+  --mono:         'IBM Plex Mono', ui-monospace, Menlo, monospace;
+  --sans:         'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --shadow-card:  0 1px 2px rgba(16,32,30,.05);
+  --shadow-rec:   0 18px 44px -18px rgba(15,118,110,.35), 0 2px 6px rgba(16,32,30,.06);
 }
 
 /* ---------- Reset básico ---------- */
 *,*::before,*::after{ box-sizing:border-box; }
-html{ scroll-behavior:smooth; }
+html{ scroll-behavior:smooth; scroll-padding-top:84px; }
 body{
-  margin:0; background:var(--bg); color:var(--tx);
-  font-family:var(--font-b); font-size:16px; line-height:1.6;
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:var(--sans); font-size:16px; line-height:1.55;
   -webkit-font-smoothing:antialiased; overflow-x:hidden;
 }
-h1,h2,h3,h4{ font-family:var(--font-d); font-weight:600; line-height:1.15; margin:0; letter-spacing:-.02em; }
+h1,h2,h3,h4{ font-weight:600; line-height:1.15; margin:0; letter-spacing:-.02em; }
 p{ margin:0; }
-a{ color:inherit; text-decoration:none; }
+a{ color:var(--accent-strong); text-decoration:none; }
+a:hover{ text-decoration:underline; }
 button{ font-family:inherit; color:inherit; cursor:pointer; }
-:focus-visible{ outline:2px solid var(--cyan); outline-offset:3px; border-radius:6px; }
-.mono{ font-family:'Space Grotesk',ui-monospace,monospace; font-variant-numeric:tabular-nums; }
+::selection{ background:var(--accent-soft); }
+:focus-visible{ outline:2px solid var(--accent); outline-offset:3px; border-radius:6px; }
+.mono{ font-family:var(--mono); }
+.num{ font-family:var(--mono); font-variant-numeric:tabular-nums; }
 
 /* ---------- Barra superior ---------- */
 .topbar{
   position:sticky; top:0; z-index:60;
-  display:flex; align-items:center; gap:18px;
-  padding:14px clamp(16px,4vw,40px);
-  background:rgba(7,11,20,.78); backdrop-filter:blur(14px);
+  background:rgba(255,255,255,.92); backdrop-filter:blur(10px);
   border-bottom:1px solid var(--line);
 }
-.brand{ display:flex; align-items:center; gap:10px; font-family:var(--font-d); font-weight:600; letter-spacing:-.01em; }
-.brand svg{ flex:0 0 auto; }
-.brand small{ display:block; font-family:var(--font-b); font-weight:400; font-size:11px; color:var(--tx-3); letter-spacing:0; }
-.topnav{ margin-left:auto; display:flex; gap:22px; font-size:14px; color:var(--tx-2); }
-.topnav a:hover{ color:var(--cyan); }
-.topnav a{ transition:color .18s ease; }
+.topbar-inner{
+  max-width:1160px; margin:0 auto; padding:0 24px;
+  display:flex; align-items:center; gap:18px; height:62px;
+}
+.brand{ display:flex; align-items:center; gap:10px; font-weight:600; font-size:14px; letter-spacing:.2px; }
+.brand svg{ flex:none; }
+.brand small{ display:block; font-weight:400; font-size:11px; color:var(--muted); letter-spacing:0; }
+.topnav{ margin-left:auto; display:flex; gap:22px; font-size:13.5px; font-weight:500; }
+.topnav a{ color:var(--ink-2); }
+.topnav a:hover{ color:var(--accent-strong); text-decoration:none; }
 
 /* ---------- Hero ---------- */
-.hero{ max-width:1240px; margin:0 auto; padding:clamp(40px,7vw,84px) clamp(16px,4vw,40px) 24px; }
+.hero{ max-width:1160px; margin:0 auto; padding:clamp(36px,6vw,72px) 24px 20px; }
 .eyebrow{
   display:inline-flex; align-items:center; gap:10px;
-  font-family:var(--font-d); font-size:12px; font-weight:500;
-  letter-spacing:.18em; text-transform:uppercase; color:var(--cyan);
+  font-family:var(--mono); font-size:11.5px; font-weight:500;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--accent);
 }
-.eyebrow::before{ content:''; width:34px; height:1px; background:var(--cyan); display:block; }
-h1{ font-size:clamp(30px,5.4vw,54px); margin:18px 0 16px; max-width:20ch; }
-h1 em{ font-style:normal; color:var(--cyan); }
-.lead{ font-size:clamp(15px,1.6vw,18px); color:var(--tx-2); max-width:62ch; font-weight:300; }
-.chips{ display:flex; flex-wrap:wrap; gap:9px; margin-top:26px; }
+.eyebrow::before{ content:''; width:32px; height:1px; background:var(--accent); display:block; }
+h1{ font-size:clamp(29px,5vw,52px); margin:16px 0 14px; max-width:20ch; }
+h1 em{ font-style:normal; color:var(--accent); }
+.lead{ font-size:clamp(15px,1.55vw,17.5px); color:var(--ink-2); max-width:64ch; font-weight:300; }
+.chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top:24px; }
 .chip{
-  font-size:12.5px; padding:7px 13px; border-radius:999px;
-  border:1px solid var(--line-2); background:var(--bg-2); color:var(--tx-2);
+  font-family:var(--mono); font-size:11.5px; padding:6px 12px; border-radius:99px;
+  border:1px solid var(--line-strong); background:var(--bg-soft); color:var(--ink-2);
   display:inline-flex; align-items:center; gap:7px;
 }
-.chip i{ width:6px; height:6px; border-radius:50%; background:var(--cyan); display:block; }
+.chip i{ width:6px; height:6px; border-radius:50%; background:var(--accent); display:block; }
 
 /* ---------- Secciones ---------- */
-.section{ max-width:1240px; margin:0 auto; padding:clamp(44px,6vw,76px) clamp(16px,4vw,40px); }
-.section-head{ max-width:70ch; margin-bottom:30px; }
+.section{ max-width:1160px; margin:0 auto; padding:clamp(40px,5.5vw,72px) 24px; }
+.section-head{ max-width:70ch; margin-bottom:28px; }
 .kicker{
-  font-family:var(--font-d); font-size:12px; letter-spacing:.18em;
-  text-transform:uppercase; color:var(--cyan); display:block; margin-bottom:12px;
+  font-family:var(--mono); font-size:11.5px; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--accent); display:block; margin-bottom:11px;
 }
-h2{ font-size:clamp(23px,3.2vw,36px); margin-bottom:12px; }
-.sub{ color:var(--tx-2); font-weight:300; }
+h2{ font-size:clamp(22px,3vw,34px); margin-bottom:11px; }
+.sub{ color:var(--ink-2); font-weight:300; }
 
-/* ---------- Escenario 3D ---------- */
-.stage-wrap{
-  max-width:1240px; margin:0 auto; padding:0 clamp(16px,4vw,40px);
-}
+/* ---------- Visor 3D ---------- */
+.stage-wrap{ max-width:1160px; margin:0 auto; padding:0 24px; }
 .stage{
-  position:relative; height:clamp(430px,64vh,660px);
+  position:relative; height:clamp(420px,62vh,640px);
   border:1px solid var(--line); border-radius:var(--radius);
-  background:radial-gradient(120% 90% at 50% 0%,#0e1a2e 0%,#070b14 70%);
-  overflow:hidden; box-shadow:var(--shadow);
+  /* Fondo claro con un halo teal muy tenue para dar profundidad al modelo */
+  background:radial-gradient(120% 90% at 50% 8%, #ffffff 0%, #f1f6f5 55%, #e8f1ef 100%);
+  overflow:hidden; box-shadow:var(--shadow-card);
 }
 .stage canvas{ display:block; }
-/* Rejilla de fondo sutil del visor */
+/* Rejilla técnica sutil sobre el fondo blanco del visor */
 .stage::after{
   content:''; position:absolute; inset:0; pointer-events:none;
-  background-image:linear-gradient(rgba(56,224,200,.05) 1px,transparent 1px),
-                   linear-gradient(90deg,rgba(56,224,200,.05) 1px,transparent 1px);
-  background-size:52px 52px;
-  mask-image:radial-gradient(80% 70% at 50% 45%,#000 20%,transparent 100%);
+  background-image:linear-gradient(rgba(15,118,110,.055) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(15,118,110,.055) 1px,transparent 1px);
+  background-size:48px 48px;
+  mask-image:radial-gradient(85% 75% at 50% 45%,#000 15%,transparent 100%);
 }
 .stage-hint{
-  position:absolute; left:16px; bottom:14px; z-index:3;
-  font-size:12px; color:var(--tx-3); display:flex; gap:14px; flex-wrap:wrap;
-  pointer-events:none;
+  position:absolute; left:16px; bottom:13px; z-index:3;
+  font-family:var(--mono); font-size:11px; color:var(--muted);
+  display:flex; gap:14px; flex-wrap:wrap; pointer-events:none;
 }
-.stage-hint span{ display:inline-flex; align-items:center; gap:6px; }
+.stage-hint span{ display:inline-flex; align-items:center; gap:5px; }
 
 /* Controles flotantes del visor */
 .stage-tools{ position:absolute; top:14px; left:14px; z-index:4; display:flex; gap:8px; flex-wrap:wrap; max-width:calc(100% - 28px); }
 .btn{
-  border:1px solid var(--line-2); background:rgba(17,28,46,.86); color:var(--tx);
-  border-radius:var(--radius-sm); padding:9px 14px; font-size:13px; font-weight:500;
-  display:inline-flex; align-items:center; gap:8px; backdrop-filter:blur(8px);
-  transition:border-color .18s ease, background .18s ease, transform .18s ease;
+  border:1px solid var(--line-strong); background:rgba(255,255,255,.92); color:var(--ink);
+  border-radius:var(--radius-sm); padding:8px 13px; font-family:var(--mono);
+  font-size:12px; font-weight:500; display:inline-flex; align-items:center; gap:8px;
+  backdrop-filter:blur(8px); transition:border-color .15s, background .15s, color .15s;
 }
-.btn:hover{ border-color:var(--cyan); background:rgba(29,141,128,.18); }
-.btn:active{ transform:translateY(1px); }
-.btn.on{ border-color:var(--cyan); background:rgba(56,224,200,.16); box-shadow:var(--glow-cyan); }
+.btn:hover{ border-color:var(--accent); background:var(--accent-soft); color:var(--accent-strong); }
+.btn.on{ border-color:var(--accent); background:var(--accent-soft); color:var(--accent-strong); box-shadow:0 0 0 3px var(--accent-ring); }
 
-/* Contador de presupuesto (esquina superior derecha) */
+/* Contador de presupuesto */
 .budget{
   position:absolute; top:14px; right:14px; z-index:4; text-align:right;
-  background:rgba(11,18,32,.86); border:1px solid var(--line-2); border-radius:14px;
-  padding:12px 16px; backdrop-filter:blur(10px); box-shadow:var(--shadow);
+  background:rgba(255,255,255,.94); border:1px solid var(--line-strong);
+  border-radius:var(--radius); padding:12px 16px; backdrop-filter:blur(10px);
+  box-shadow:var(--shadow-card);
 }
-.budget-label{ font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--tx-3); }
-.budget-total{ font-family:var(--font-d); font-size:clamp(19px,2.6vw,26px); font-weight:700; color:var(--cyan); font-variant-numeric:tabular-nums; }
-.budget-list{ margin-top:10px; display:grid; gap:3px; }
+.budget-label{ font-family:var(--mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
+.budget-total{ font-family:var(--mono); font-size:clamp(18px,2.4vw,25px); font-weight:600; color:var(--accent); font-variant-numeric:tabular-nums; }
+.budget-list{ margin-top:9px; display:grid; gap:2px; }
 .budget-row{
-  display:flex; justify-content:space-between; gap:16px; font-size:11.5px;
-  color:var(--tx-3); font-variant-numeric:tabular-nums; transition:color .15s ease;
+  display:flex; justify-content:space-between; gap:16px; font-family:var(--mono);
+  font-size:11px; color:var(--muted); font-variant-numeric:tabular-nums;
+  transition:color .15s; padding:1px 0;
 }
 .budget-row .r-name{ max-width:150px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.budget-row.hl{ color:var(--cyan); }
-.budget-row.hl .r-name{ color:var(--cyan); }
+.budget-row.hl{ color:var(--accent-strong); }
+.budget-row.hl .r-name{ color:var(--accent-strong); font-weight:600; }
 
 /* Tooltip de hover */
 .tip{
   position:absolute; z-index:6; pointer-events:none; opacity:0;
   transform:translate(-50%,-100%) translateY(-14px);
-  transition:opacity .14s ease;
-  width:min(310px,72vw);
-  background:rgba(11,18,32,.96); border:1px solid var(--line-2);
-  border-radius:14px; padding:13px 15px; box-shadow:var(--shadow);
-  backdrop-filter:blur(10px);
+  transition:opacity .14s ease; width:min(310px,72vw);
+  background:#fff; border:1px solid var(--line-strong); border-left:3px solid var(--accent);
+  border-radius:var(--radius); padding:13px 15px; box-shadow:var(--shadow-rec);
 }
 .tip.show{ opacity:1; }
-.tip-name{ font-family:var(--font-d); font-weight:600; font-size:14.5px; margin-bottom:5px; }
-.tip-model{ font-size:12px; color:var(--cyan); margin-bottom:7px; }
-.tip-just{ font-size:12px; color:var(--tx-2); line-height:1.5; }
-.tip-cost{ margin-top:9px; font-family:var(--font-d); font-weight:600; font-size:14px; color:var(--tx); font-variant-numeric:tabular-nums; }
+.tip-name{ font-weight:600; font-size:14.5px; margin-bottom:5px; }
+.tip-model{ font-family:var(--mono); font-size:11.5px; color:var(--accent); margin-bottom:7px; }
+.tip-just{ font-size:12px; color:var(--ink-2); line-height:1.5; }
+.tip-cost{ margin-top:9px; font-family:var(--mono); font-weight:600; font-size:14px; color:var(--ink); font-variant-numeric:tabular-nums; }
 
 /* ---------- Panel lateral de ficha técnica ---------- */
 .panel{
   position:fixed; top:0; right:0; z-index:80; height:100dvh;
-  width:min(410px,92vw); background:linear-gradient(180deg,var(--bg-2),var(--bg));
-  border-left:1px solid var(--line); box-shadow:-30px 0 70px -40px #000;
+  width:min(410px,92vw); background:#fff;
+  border-left:1px solid var(--line); box-shadow:-30px 0 70px -40px rgba(16,32,30,.35);
   transform:translateX(102%); transition:transform .34s cubic-bezier(.4,0,.2,1);
   display:flex; flex-direction:column;
 }
 .panel.open{ transform:translateX(0); }
 .panel-head{
   display:flex; align-items:flex-start; gap:14px;
-  padding:22px 22px 16px; border-bottom:1px solid var(--line);
+  padding:20px 22px 16px; border-bottom:1px solid var(--line); background:var(--bg-soft);
 }
-.panel-head h3{ font-size:19px; }
-.panel-kicker{ font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--cyan); margin-bottom:7px; display:block; }
+.panel-head h3{ font-size:18px; }
+.panel-kicker{ font-family:var(--mono); font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); margin-bottom:7px; display:block; }
 .panel-body{ padding:20px 22px 40px; overflow-y:auto; }
 .panel-close{
-  margin-left:auto; flex:0 0 auto; width:34px; height:34px; border-radius:9px;
-  border:1px solid var(--line-2); background:transparent; color:var(--tx-2);
-  font-size:17px; line-height:1; display:grid; place-items:center;
+  margin-left:auto; flex:0 0 auto; width:34px; height:34px; border-radius:var(--radius-sm);
+  border:1px solid var(--line-strong); background:#fff; color:var(--ink-2);
+  font-size:16px; line-height:1; display:grid; place-items:center;
 }
-.panel-close:hover{ border-color:var(--cyan); color:var(--cyan); }
-.ficha{ display:grid; gap:16px; }
-.ficha-block{ border:1px solid var(--line); border-radius:12px; padding:14px 16px; background:rgba(17,28,46,.5); }
-.ficha-label{ font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--tx-3); margin-bottom:6px; }
-.ficha-val{ font-size:14px; color:var(--tx); }
-.ficha-cost{ font-family:var(--font-d); font-size:24px; font-weight:700; color:var(--cyan); font-variant-numeric:tabular-nums; }
-.panel-model{ font-family:var(--font-d); font-size:15px; color:var(--cyan); }
+.panel-close:hover{ border-color:var(--accent); color:var(--accent); }
+.ficha{ display:grid; gap:14px; }
+.ficha-block{ border:1px solid var(--line); border-radius:12px; padding:14px 16px; background:#fff; }
+.ficha-label{ font-family:var(--mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
+.ficha-val{ font-size:14px; color:var(--ink-2); }
+.ficha-cost{ font-family:var(--mono); font-size:23px; font-weight:600; color:var(--accent); font-variant-numeric:tabular-nums; }
+.panel-model{ font-family:var(--mono); font-size:13.5px; color:var(--accent-strong); }
 .overlay{
-  position:fixed; inset:0; z-index:70; background:rgba(4,7,13,.6);
-  opacity:0; pointer-events:none; transition:opacity .3s ease; backdrop-filter:blur(2px);
+  position:fixed; inset:0; z-index:70; background:rgba(16,32,30,.32);
+  opacity:0; pointer-events:none; transition:opacity .3s ease;
 }
 .overlay.show{ opacity:1; pointer-events:auto; }
 
@@ -209,68 +217,69 @@ h2{ font-size:clamp(23px,3.2vw,36px); margin-bottom:12px; }
 .grid-2{ display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:20px; }
 .card{
   border:1px solid var(--line); border-radius:var(--radius); padding:24px;
-  background:linear-gradient(180deg,rgba(17,28,46,.7),rgba(11,18,32,.5));
-  position:relative; overflow:hidden;
+  background:#fff; position:relative; overflow:hidden; box-shadow:var(--shadow-card);
 }
-.card::before{ content:''; position:absolute; inset:0 0 auto 0; height:2px; background:var(--accent,var(--cyan)); opacity:.85; }
+.card::before{ content:''; position:absolute; inset:0 0 auto 0; height:3px; background:var(--accent,var(--accent)); }
 .card.gpu0{ --accent:var(--blue); }
 .card.gpu1{ --accent:var(--violet); }
-.card h3{ font-size:19px; margin-bottom:6px; }
-.card .tagline{ font-size:13px; color:var(--tx-3); margin-bottom:18px; }
-.bar{ height:8px; border-radius:999px; background:var(--bg-3); overflow:hidden; margin:10px 0 6px; }
-.bar i{ display:block; height:100%; border-radius:999px; background:var(--accent,var(--cyan)); }
-.bar-foot{ display:flex; justify-content:space-between; font-size:11.5px; color:var(--tx-3); font-variant-numeric:tabular-nums; }
-.mlist{ list-style:none; margin:18px 0 0; padding:0; display:grid; gap:11px; }
-.mlist li{ display:flex; gap:11px; font-size:13.5px; color:var(--tx-2); }
-.mlist li::before{ content:''; flex:0 0 auto; width:6px; height:6px; margin-top:8px; border-radius:2px; background:var(--accent,var(--cyan)); }
+.card h3{ font-size:18px; margin-bottom:6px; }
+.card .tagline{ font-size:13px; color:var(--muted); margin-bottom:18px; }
+.bar{ height:8px; border-radius:99px; background:var(--bg-soft); overflow:hidden; margin:10px 0 6px; border:1px solid var(--line); }
+.bar i{ display:block; height:100%; border-radius:99px; background:var(--accent); }
+.bar-foot{ display:flex; justify-content:space-between; font-family:var(--mono); font-size:11px; color:var(--muted); font-variant-numeric:tabular-nums; }
+.mlist{ list-style:none; margin:18px 0 0; padding:0; display:grid; gap:10px; }
+.mlist li{ display:flex; gap:11px; font-size:13.5px; color:var(--ink-2); }
+.mlist li::before{ content:''; flex:0 0 auto; width:6px; height:6px; margin-top:8px; border-radius:2px; background:var(--accent,var(--accent)); }
 .badge{
-  display:inline-block; font-size:10.5px; letter-spacing:.14em; text-transform:uppercase;
-  border:1px solid var(--accent,var(--cyan)); color:var(--accent,var(--cyan));
-  border-radius:999px; padding:4px 11px; margin-bottom:14px; font-weight:500;
+  display:inline-block; font-family:var(--mono); font-size:10px; letter-spacing:.12em;
+  text-transform:uppercase; border:1px solid var(--accent); color:var(--accent);
+  border-radius:99px; padding:4px 11px; margin-bottom:13px; font-weight:500;
+  background:var(--accent-soft);
 }
 
 /* ---------- Requisitos de instalación ---------- */
 .grid-4{ display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:18px; }
-.req{ border:1px solid var(--line); border-radius:var(--radius); padding:22px; background:var(--bg-2); transition:border-color .2s ease, transform .2s ease; }
-.req:hover{ border-color:var(--line-2); transform:translateY(-3px); }
+.req{
+  border:1px solid var(--line); border-radius:var(--radius); padding:22px;
+  background:var(--bg-soft); transition:border-color .2s, transform .2s, box-shadow .2s;
+}
+.req:hover{ border-color:var(--line-strong); transform:translateY(-3px); box-shadow:var(--shadow-card); }
 .req-ico{
   width:42px; height:42px; border-radius:12px; display:grid; place-items:center;
-  background:rgba(56,224,200,.1); border:1px solid rgba(56,224,200,.28); margin-bottom:16px;
+  background:var(--accent-soft); border:1px solid #cfe8e4; margin-bottom:15px;
 }
 .req h4{ font-size:15.5px; margin-bottom:9px; }
-.req p{ font-size:13px; color:var(--tx-2); }
-.req ul{ margin:10px 0 0; padding-left:16px; font-size:12.5px; color:var(--tx-3); }
+.req p{ font-size:13px; color:var(--ink-2); }
+.req ul{ margin:10px 0 0; padding-left:16px; font-family:var(--mono); font-size:11.5px; color:var(--muted); }
 .req li{ margin-bottom:5px; }
 
 /* ---------- Footer ---------- */
-.footer{ border-top:1px solid var(--line); background:linear-gradient(180deg,var(--bg),#050810); margin-top:40px; }
-.footer-inner{ max-width:1240px; margin:0 auto; padding:clamp(40px,6vw,64px) clamp(16px,4vw,40px); text-align:center; }
-.total-label{ font-size:12px; letter-spacing:.2em; text-transform:uppercase; color:var(--tx-3); }
+.footer{ border-top:1px solid var(--line); background:var(--bg-soft); margin-top:36px; }
+.footer-inner{ max-width:1160px; margin:0 auto; padding:clamp(38px,5.5vw,60px) 24px; text-align:center; }
+.total-label{ font-family:var(--mono); font-size:11.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--muted); }
 .total{
-  font-family:var(--font-d); font-weight:700; letter-spacing:-.03em;
-  font-size:clamp(38px,8vw,84px); color:var(--cyan); margin:8px 0 6px;
+  font-family:var(--mono); font-weight:600; letter-spacing:-.03em;
+  font-size:clamp(36px,7.5vw,78px); color:var(--accent); margin:8px 0 6px;
   font-variant-numeric:tabular-nums; line-height:1;
-  text-shadow:0 0 60px rgba(56,224,200,.35);
 }
-.total small{ font-size:.42em; font-weight:500; color:var(--tx-2); margin-left:8px; letter-spacing:0; }
-.footer-note{ font-size:13px; color:var(--tx-3); max-width:64ch; margin:16px auto 0; }
-.footer-repo{ margin-top:26px; font-size:12px; color:var(--tx-3); }
-.footer-repo a{ color:var(--cyan); }
+.total small{ font-size:.42em; font-weight:500; color:var(--ink-2); margin-left:8px; letter-spacing:0; }
+.footer-note{ font-size:13px; color:var(--muted); max-width:66ch; margin:16px auto 0; }
+.footer-repo{ margin-top:24px; font-family:var(--mono); font-size:11.5px; color:var(--muted); }
 
 /* ---------- Animación de aparición ---------- */
-.reveal{ opacity:0; transform:translateY(18px); transition:opacity .6s ease, transform .6s ease; }
+.reveal{ opacity:0; transform:translateY(16px); transition:opacity .6s ease, transform .6s ease; }
 .reveal.in{ opacity:1; transform:none; }
 
 /* ---------- Responsive ---------- */
 @media (max-width:900px){
   .topnav{ display:none; }
-  .budget-list{ display:none; }         /* en móvil solo el total */
-  .stage-tools .btn span.t{ display:none; }  /* botones compactos */
-  .stage{ height:min(74vh,520px); }
+  .budget-list{ display:none; }
+  .stage-tools .btn span.t{ display:none; }
+  .stage{ height:min(72vh,500px); }
 }
 @media (max-width:560px){
   .budget{ padding:9px 12px; }
-  .budget-total{ font-size:17px; }
+  .budget-total{ font-size:16px; }
   .stage-hint span.hide-sm{ display:none; }
 }
 @media (prefers-reduced-motion:reduce){
@@ -278,36 +287,44 @@ h2{ font-size:clamp(23px,3.2vw,36px); margin-bottom:12px; }
   .reveal{ opacity:1; transform:none; transition:none; }
   .panel{ transition:none; }
 }
+
+/* ---------- Impresión ---------- */
+@media print{
+  @page{ margin:14mm 12mm; }
+  .topbar, .stage-tools, .stage-hint{ display:none; }
+  .stage{ height:120mm; }
+  .reveal{ opacity:1; transform:none; }
+}
 </style>
 </head>
 <body>
 
 <!-- ===================== BARRA SUPERIOR ===================== -->
 <header class="topbar">
-  <div class="brand">
-    <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true">
-      <rect width="32" height="32" rx="8" fill="#0b1220" stroke="#1e2c44"/>
-      <path d="M16 5.5l8.6 4.8v11.4L16 26.5l-8.6-4.8V10.3z" fill="none" stroke="#38e0c8" stroke-width="1.8"/>
-      <circle cx="16" cy="16" r="2.6" fill="#38e0c8"/>
-    </svg>
-    <div>Miniservidor IA Escolar<small>Configurador técnico · Colombia</small></div>
+  <div class="topbar-inner">
+    <div class="brand">
+      <svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true">
+        <path d="M16 2 28 9v14L16 30 4 23V9z" fill="#0f766e"/>
+        <path d="M11 16.5l3.5 3.5L21 13" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div>Miniservidor de IA Escolar<small>Configurador técnico · Colombia</small></div>
+    </div>
+    <nav class="topnav">
+      <a href="#configurador">Configurador 3D</a>
+      <a href="#recursos">Asignación</a>
+      <a href="#instalacion">Instalación</a>
+      <a href="#presupuesto">Presupuesto</a>
+    </nav>
   </div>
-  <nav class="topnav">
-    <a href="#configurador">Configurador 3D</a>
-    <a href="#recursos">Asignación</a>
-    <a href="#instalacion">Instalación</a>
-    <a href="#presupuesto">Presupuesto</a>
-  </nav>
 </header>
-
 <!-- ===================== HERO ===================== -->
 <section class="hero">
   <span class="eyebrow">Infraestructura de IA on-premise</span>
   <h1>El servidor de IA que vive <em>dentro del colegio</em>, no en la nube.</h1>
   <p class="lead">
-    Un equipo Silencioso, seguro y sin suscripciones mensuales que atiende a un salón completo de estudiantes
-    ejecutando modelos de lenguaje e imágenes de forma local. Aquí puede explorar cada componente en 3D,
-    entender para qué sirve y ver cuánto cuesta.
+    Un equipo silencioso, seguro y sin suscripciones mensuales que atiende a un salón completo de
+    estudiantes ejecutando modelos de lenguaje e imágenes de forma local. Baje por la página para
+    ver cómo se arma pieza por pieza, y haga clic en cualquiera para conocer su función y su costo.
   </p>
   <div class="chips">
     <span class="chip"><i></i>Datos que no salen del colegio</span>
@@ -323,16 +340,16 @@ h2{ font-size:clamp(23px,3.2vw,36px); margin-bottom:12px; }
   <div class="stage" id="stage">
     <!-- Controles que flotan sobre el lienzo 3D -->
     <div class="stage-tools">
-      <button class="btn" id="btnExplode" aria-pressed="true">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/></svg>
+      <button class="btn" id="btnExplode" aria-pressed="false" aria-label="Alternar vista explosionada del equipo">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6L5.6 18.4"/></svg>
         <span class="t">Vista explosionada</span>
       </button>
-      <button class="btn" id="btnSpin" aria-pressed="true">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v5h-5"/></svg>
+      <button class="btn" id="btnSpin" aria-pressed="true" aria-label="Activar o desactivar la rotación automática">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v5h-5"/></svg>
         <span class="t">Rotación auto</span>
       </button>
-      <button class="btn" id="btnReset">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 4v5h5"/></svg>
+      <button class="btn" id="btnReset" aria-label="Recentrar la vista del equipo">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 4v5h5"/></svg>
         <span class="t">Centrar</span>
       </button>
     </div>
@@ -354,10 +371,22 @@ h2{ font-size:clamp(23px,3.2vw,36px); margin-bottom:12px; }
 
     <!-- Pistas de uso -->
     <div class="stage-hint">
-      <span>🖱️ Arrastrar para rotar</span>
-      <span>🔍 Scroll para acercar</span>
-      <span class="hide-sm">👆 Clic en una pieza para ver su ficha</span>
-      <span class="hide-sm">🔎 Doble clic para acercar a una pieza</span>
+      <span>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/><circle cx="12" cy="12" r="3.2"/></svg>
+        Arrastrar para rotar
+      </span>
+      <span>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M11 8v6M8 11h6M20 20l-3.6-3.6"/></svg>
+        Scroll para acercar
+      </span>
+      <span class="hide-sm">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 4.5v9M9 4.5a1.6 1.6 0 1 1 3.2 0v5a3 3 0 1 1-3.2 3"/></svg>
+        Clic en una pieza para ver su ficha
+      </span>
+      <span class="hide-sm">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 4v14M6.5 13.5L12 19l5.5-5.5"/></svg>
+        Baje para desarmarlo
+      </span>
     </div>
   </div>
 </section>
@@ -370,7 +399,9 @@ h2{ font-size:clamp(23px,3.2vw,36px); margin-bottom:12px; }
       <span class="panel-kicker" id="panelKicker">Componente</span>
       <h3 id="panelTitle">—</h3>
     </div>
-    <button class="panel-close" id="panelClose" aria-label="Cerrar ficha">✕</button>
+    <button class="panel-close" id="panelClose" aria-label="Cerrar la ficha técnica" title="Cerrar">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
   </div>
   <div class="panel-body">
     <div class="ficha" id="panelBody"></div>
@@ -378,7 +409,7 @@ h2{ font-size:clamp(23px,3.2vw,36px); margin-bottom:12px; }
 </aside>
 
 <!-- ===================== ASIGNACIÓN DE RECURSOS ===================== -->
-<section class="section" id="recursos">
+<section class="section" id="recursos" style="background:var(--bg-soft); border-block:1px solid var(--line);">
   <div class="section-head reveal">
     <span class="kicker">Asignación de recursos</span>
     <h2>Dos tarjetas gráficas, dos trabajos distintos</h2>
@@ -421,8 +452,8 @@ h2{ font-size:clamp(23px,3.2vw,36px); margin-bottom:12px; }
     </article>
   </div>
 
-  <div class="card reveal" style="margin-top:20px; --accent:var(--tx-3)">
-    <span class="badge" style="--accent:var(--tx-2)">CPU + 64 GB RAM DDR5</span>
+  <div class="card reveal" style="margin-top:20px; --accent:var(--muted)">
+    <span class="badge" style="--accent:var(--muted); background:var(--bg-soft);">CPU + 64 GB RAM DDR5</span>
     <h3>El tráfico y la memoria del sistema</h3>
     <p class="tagline">
       Maneja las colas de peticiones HTTP, la caché de sesiones de los alumnos,
@@ -446,7 +477,7 @@ h2{ font-size:clamp(23px,3.2vw,36px); margin-bottom:12px; }
     <!-- Ubicación -->
     <article class="req reveal">
       <div class="req-ico">
-        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#38e0c8" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V8l7-5 7 5v13"/><path d="M9 21v-6h6v6"/></svg>
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#0f766e" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V8l7-5 7 5v13"/><path d="M9 21v-6h6v6"/></svg>
       </div>
       <h4>Ubicación</h4>
       <p>Espacio cerrado y controlado: sala de profesores, sala de servidores o un soporte elevado en la sala de sistemas.</p>
@@ -460,7 +491,7 @@ h2{ font-size:clamp(23px,3.2vw,36px); margin-bottom:12px; }
     <!-- Eléctrico -->
     <article class="req reveal">
       <div class="req-ico">
-        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#38e0c8" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4.5 13H11l-1 9 8.5-11H12z"/></svg>
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#0f766e" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4.5 13H11l-1 9 8.5-11H12z"/></svg>
       </div>
       <h4>Eléctrico</h4>
       <p>Circuito con polo a tierra certificado y conexión exclusiva a la salida de la UPS online de 2 kVA.</p>
@@ -474,21 +505,21 @@ h2{ font-size:clamp(23px,3.2vw,36px); margin-bottom:12px; }
     <!-- Térmico -->
     <article class="req reveal">
       <div class="req-ico">
-        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#38e0c8" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13.5V5a2 2 0 1 1 4 0v8.5a4 4 0 1 1-4 0z"/><path d="M12 16.5v-2"/></svg>
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#0f766e" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13.5V5a2 2 0 1 1 4 0v8.5a4 4 0 1 1-4 0z"/><path d="M12 16.5v-2"/></svg>
       </div>
       <h4>Térmico</h4>
       <p>Temperatura ambiental ideal entre 20 °C y 26 °C, con ventilación de presión positiva en el chasis.</p>
       <ul>
         <li>20 °C – 26 °C</li>
         <li>Presión positiva de aire</li>
-        <li>Evita el <em>thermal throttling</em></li>
+        <li>Evita el thermal throttling</li>
       </ul>
     </article>
 
     <!-- Red -->
     <article class="req reveal">
       <div class="req-ico">
-        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#38e0c8" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="14" width="20" height="7" rx="2"/><path d="M6 17.5h.01M10 17.5h.01"/><path d="M12 14V9"/><path d="M8 6.5a5.7 5.7 0 0 1 8 0"/></svg>
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#0f766e" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="14" width="20" height="7" rx="2"/><path d="M6 17.5h.01M10 17.5h.01"/><path d="M12 14V9"/><path d="M8 6.5a5.7 5.7 0 0 1 8 0"/></svg>
       </div>
       <h4>Red</h4>
       <p>Conexión obligatoria por cable Ethernet Cat 6A al switch central del colegio.</p>
@@ -571,14 +602,14 @@ const COMPONENTES = [
 
   { id:'nvme',  nombre:'Almacenamiento NVMe', modelo:'2x Kingston KC3000 / WD Black SN850X 2TB',
     justificacion:'Lectura a 7000MB/s para cargar pesos de modelos (.safetensors/.gguf) en segundos.',
-    costo_cop:1450000, color:0xb9c6dd,
+    costo_cop:1450000, color:0xa8b4c2,
     detalle:['Dos unidades M.2 PCIe 4.0 de 2 TB: 4 TB totales.',
              'Lectura de hasta 7000 MB/s: los modelos abren en segundos, no en minutos.',
              'Una unidad para sistema y modelos, otra para datos y respaldo local.'] },
 
   { id:'psu',   nombre:'Fuente de Poder (PSU)', modelo:'Corsair RM1000e / EVGA SuperNOVA 1000W 80+ Gold',
     justificacion:'Alimentación limpia con dos líneas PCIe independientes ante picos de las dos GPUs.',
-    costo_cop:950000, color:0x9aa9c0,
+    costo_cop:950000, color:0x8b99ad,
     detalle:['1000 W con certificación 80+ Gold y margen ante picos de consumo.',
              'Dos líneas PCIe independientes: una por tarjeta gráfica.',
              'Alimentación estable = menos reinicios y menos desgaste de componentes.'] },
@@ -645,18 +676,34 @@ const stage = document.getElementById('stage');
 
 // --- Renderer -------------------------------------------------------------
 const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
+renderer.setClearColor(0x000000, 0);   // fondo transparente: manda el CSS claro
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(stage.clientWidth, stage.clientHeight);
 renderer.shadowMap.enabled = false;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
+// El canvas de WebGL no aporta nada a un lector de pantalla, así que se
+// etiqueta como imagen con una descripción de lo que representa y de cómo
+// se usa. Es la única información que recibirá un usuario con lector.
+renderer.domElement.setAttribute('role', 'img');
+renderer.domElement.setAttribute('aria-label',
+  'Vista 3D interactiva del miniservidor de IA escolar. Arrastre para rotar, ' +
+  'use la rueda para acercar y haga clic sobre una pieza para ver su ficha técnica. ' +
+  'La lista completa de componentes está en la tabla de presupuesto.');
+renderer.domElement.style.outline = 'none';
 stage.appendChild(renderer.domElement);
 
 // --- Escena y cámara ------------------------------------------------------
 const scene = new THREE.Scene();
-scene.fog = new THREE.FogExp2(0x070b14, 0.021);
+scene.fog = new THREE.FogExp2(0xf2f7f6, 0.014);
 
-const camera = new THREE.PerspectiveCamera(42, stage.clientWidth/stage.clientHeight, 0.1, 220);
+const camera = new THREE.PerspectiveCamera(48, stage.clientWidth/stage.clientHeight, 0.1, 220);
 camera.position.set(19.5, 14.0, 26.0);
+
+/* Preferencia de accesibilidad: si el sistema pide menos movimiento, la escena
+   no gira sola, el despiece no depende del scroll y el equipo se muestra
+   directamente despiezado (que es el estado informativo). Se declara aquí
+   arriba porque los controles ya la consultan al configurarse. */
+const prefiereQuieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 // --- Controles de órbita (arrastrar rota, scroll hace zoom) ---------------
 const controls = new OrbitControls(camera, renderer.domElement);
@@ -680,8 +727,8 @@ controls.minDistance   = DIST_MIN;
 controls.maxDistance   = DIST_MAX;
 controls.enableZoom    = false;     // el dolly se aplica con nuestra amortiguación
 controls.maxPolarAngle = Math.PI * 0.52;   // no permite ver por debajo del piso
-controls.target.set(0, 8.4, 0);
-controls.autoRotate = true;
+controls.target.set(0, 9.2, 0);
+controls.autoRotate = !prefiereQuieto;   // sin giro continuo si hay motion reducido
 controls.autoRotateSpeed = 0.55;
 
 /* Amortiguación propia del zoom (dolly inercial).
@@ -742,16 +789,19 @@ function aplicarZoomSuave(dt) {
   }
 }
 
-// --- Iluminación ----------------------------------------------------------
-scene.add(new THREE.HemisphereLight(0x8fb6ff, 0x0a1020, 1.15));
+// --- Iluminación (pensada para fondo blanco) ------------------------------
+// Sobre blanco la escena se lee por contraste de materiales, no por brillo:
+// luz hemisférica alta y direccional suave, sin luces de color fuertes.
+scene.add(new THREE.HemisphereLight(0xffffff, 0xd8e4e2, 2.6));
 
-const key = new THREE.DirectionalLight(0xffffff, 2.1);
-key.position.set(14, 22, 16);
+const key = new THREE.DirectionalLight(0xffffff, 2.4);
+key.position.set(16, 24, 18);
 scene.add(key);
 
-const rimA = new THREE.PointLight(0x38e0c8, 220, 60, 2); rimA.position.set(-14, 9, -10); scene.add(rimA);
-const rimB = new THREE.PointLight(0x4c8dff, 160, 60, 2); rimB.position.set( 14, 5,  -12); scene.add(rimB);
-const rimC = new THREE.PointLight(0xa56cff, 120, 55, 2); rimC.position.set(  0, 3,   16); scene.add(rimC);
+// Luz de relleno para que las caras en sombra no queden negras
+const relleno = new THREE.DirectionalLight(0xffffff, 1.0);
+relleno.position.set(-14, 10, -12);
+scene.add(relleno);
 
 // --- Utilidades de construcción ------------------------------------------
 
@@ -821,7 +871,7 @@ const caseGroup = new THREE.Group();
 const caseBox = new THREE.Mesh(
   new THREE.BoxGeometry(CASE_W, CASE_H, CASE_D),
   new THREE.MeshBasicMaterial({
-    color: 0x2f4a6e, wireframe: true, transparent: true, opacity: 0.34
+    color: 0x7d9b98, wireframe: true, transparent: true, opacity: 0.34
   })
 );
 // La geometría de caja se centra en su origen: se eleva la mitad de su alto.
@@ -832,7 +882,7 @@ caseGroup.add(caseBox);
 const glass = new THREE.Mesh(
   new THREE.BoxGeometry(CASE_W, CASE_H, CASE_D),
   new THREE.MeshStandardMaterial({
-    color: 0x0d1a2c, transparent: true, opacity: 0.1,
+    color: 0xe9f1f0, transparent: true, opacity: 0.1,
     metalness: 0.9, roughness: 0.15, side: THREE.DoubleSide
   })
 );
@@ -842,7 +892,7 @@ caseGroup.add(glass);
 // Patas / base del chasis
 const base = new THREE.Mesh(
   new THREE.BoxGeometry(CASE_W + 0.4, 0.35, CASE_D + 0.4),
-  mat(0x1b2941, { metalness:0.8, roughness:0.5 })
+  mat(0x5c6b69, { metalness:0.8, roughness:0.5 })
 );
 base.position.y = -0.18;
 caseGroup.add(base);
@@ -850,14 +900,14 @@ caseGroup.add(base);
 /** Piso reflectante muy tenue: da profundidad a la escena. */
 const piso = new THREE.Mesh(
   new THREE.CircleGeometry(30, 64),
-  new THREE.MeshStandardMaterial({ color:0x0b1220, metalness:0.95, roughness:0.42 })
+  new THREE.MeshStandardMaterial({ color:0xeef4f3, metalness:0.2, roughness:0.85 })
 );
 piso.rotation.x = -Math.PI / 2;
 piso.position.y = -0.36;
 scene.add(piso);
 
 /** Rejilla luminosa del piso (líneas de acento tecnológico). */
-const grid = new THREE.GridHelper(60, 30, 0x1a3450, 0x122238);
+const grid = new THREE.GridHelper(60, 30, 0xc3d6d3, 0xdfe9e7);
 grid.position.y = -0.35;
 scene.add(grid);
 
@@ -876,14 +926,14 @@ function construirGPU(color, etiquetaColor) {
   // Cuerpo de la tarjeta
   const cuerpo = new THREE.Mesh(
     new THREE.BoxGeometry(6.4, 1.15, 3.0),
-    mat(0x171f2e, { metalness:0.85, roughness:0.3 })
+    mat(0x39444a, { metalness:0.85, roughness:0.3 })
   );
   g.add(cuerpo);
 
   // Disipador superior con aletas
   const shroud = new THREE.Mesh(
     new THREE.BoxGeometry(6.5, 0.55, 3.05),
-    mat(0x212c40, { metalness:0.9, roughness:0.35 })
+    mat(0x4a5760, { metalness:0.9, roughness:0.35 })
   );
   shroud.position.y = 0.8;
   g.add(shroud);
@@ -893,7 +943,7 @@ function construirGPU(color, etiquetaColor) {
   for (const x of [-1.6, 1.6]) {
     const fan = new THREE.Mesh(
       new THREE.CylinderGeometry(0.95, 0.95, 0.16, 22),
-      mat(0x2c3a52, { metalness:0.7, roughness:0.45 })
+      mat(0x5a6975, { metalness:0.7, roughness:0.45 })
     );
     fan.rotation.x = Math.PI / 2;      // el disco mira hacia arriba
     fan.position.set(x, 1.06, 0);
@@ -904,7 +954,7 @@ function construirGPU(color, etiquetaColor) {
     for (let i = 0; i < 5; i++) {
       const pala = new THREE.Mesh(
         new THREE.BoxGeometry(0.78, 0.05, 0.24),
-        mat(0x4a5b78, { metalness:0.6, roughness:0.5 })
+        mat(0x76858f, { metalness:0.6, roughness:0.5 })
       );
       pala.position.set(x, 1.13, 0);
       pala.rotation.y = (i / 5) * Math.PI * 2;
@@ -960,14 +1010,14 @@ const mobo = new THREE.Group();
 
 const pcb = new THREE.Mesh(
   new THREE.BoxGeometry(0.34, 12.6, 8.2),
-  mat(0x123a2e, { metalness:0.5, roughness:0.62 })   // verde PCB oscuro
+  mat(0x1f5c50, { metalness:0.5, roughness:0.62 })   // verde PCB oscuro
 );
 mobo.add(pcb);
 
 // Chipset
 const chipset = new THREE.Mesh(
   new THREE.BoxGeometry(0.5, 1.5, 1.5),
-  mat(0x2b3a52, { metalness:0.85, roughness:0.3 })
+  mat(0x4d5c6b, { metalness:0.85, roughness:0.3 })
 );
 chipset.position.set(0.3, -3.6, 2.6);
 mobo.add(chipset);
@@ -976,7 +1026,7 @@ mobo.add(chipset);
 for (const z of [-3.3, -2.2, 3.3]) {
   const vrm = new THREE.Mesh(
     new THREE.BoxGeometry(0.5, 1.5, 0.85),
-    mat(0x384761, { metalness:0.9, roughness:0.28 })
+    mat(0x6b7a88, { metalness:0.9, roughness:0.28 })
   );
   vrm.position.set(0.3, 4.4, z);
   mobo.add(vrm);
@@ -986,7 +1036,7 @@ for (const z of [-3.3, -2.2, 3.3]) {
 for (const y of [2.6, -1.0]) {
   const slot = new THREE.Mesh(
     new THREE.BoxGeometry(0.42, 0.3, 5.4),
-    mat(0x1d2a3f, { metalness:0.7, roughness:0.4 })
+    mat(0x3d4a5c, { metalness:0.7, roughness:0.4 })
   );
   slot.position.set(0.34, y, -1.2);
   mobo.add(slot);
@@ -1003,13 +1053,13 @@ const cpu = new THREE.Group();
 
 const chip = new THREE.Mesh(
   new THREE.BoxGeometry(0.5, 2.0, 2.0),
-  mat(0xd7dfe9, { metalness:0.95, roughness:0.18 })
+  mat(0xbfc9d4, { metalness:0.95, roughness:0.18 })
 );
 cpu.add(chip);
 
 const ihs = new THREE.Mesh(
   new THREE.BoxGeometry(0.62, 1.35, 1.35),
-  mat(0xb9c6dd, { metalness:1.0, roughness:0.12 })
+  mat(0xa8b4c2, { metalness:1.0, roughness:0.12 })
 );
 ihs.position.x = 0.16;
 cpu.add(ihs);
@@ -1028,7 +1078,7 @@ const aio = new THREE.Group();
 // Radiador (marco)
 const radiador = new THREE.Mesh(
   new THREE.BoxGeometry(8.4, 0.45, 3.0),
-  mat(0x1a2436, { metalness:0.85, roughness:0.4 })
+  mat(0x46525f, { metalness:0.85, roughness:0.4 })
 );
 radiador.position.set(0, 0, 0);
 aio.add(radiador);
@@ -1046,7 +1096,7 @@ for (const x of [-2.7, 0, 2.7]) {
 
   const buje = new THREE.Mesh(
     new THREE.CylinderGeometry(0.34, 0.34, 0.6, 18),
-    mat(0x4a5b78, { metalness:0.8, roughness:0.35 })
+    mat(0x76858f, { metalness:0.8, roughness:0.35 })
   );
   buje.position.set(x, -0.45, 0);
   aio.add(buje);
@@ -1055,7 +1105,7 @@ for (const x of [-2.7, 0, 2.7]) {
 // Bloque de la bomba sobre el socket del CPU
 const bomba = new THREE.Mesh(
   new THREE.BoxGeometry(1.9, 1.25, 1.9),
-  mat(0x27324a, { metalness:0.9, roughness:0.25 })
+  mat(0x4f5d6e, { metalness:0.9, roughness:0.25 })
 );
 bomba.position.set(-3.1, -7.6, 0.2);
 aio.add(bomba);
@@ -1072,7 +1122,7 @@ aio.add(anillo);
 for (const dz of [-0.35, 0.35]) {
   const manga = new THREE.Mesh(
     new THREE.CylinderGeometry(0.16, 0.16, 8.6, 12),
-    mat(0x151d2b, { metalness:0.4, roughness:0.8 })
+    mat(0x2f3a45, { metalness:0.4, roughness:0.8 })
   );
   manga.position.set(-1.6, -4.1, dz);
   manga.rotation.z = Math.PI / 2.35;
@@ -1091,7 +1141,7 @@ const ram = new THREE.Group();
 for (const z of [-0.75, 0.55]) {
   const modulo = new THREE.Mesh(
     new THREE.BoxGeometry(0.42, 4.4, 0.62),
-    mat(0x1c2740, { metalness:0.7, roughness:0.4 })
+    mat(0x37455c, { metalness:0.7, roughness:0.4 })
   );
   modulo.position.set(0, 0, z);
   ram.add(modulo);
@@ -1099,7 +1149,7 @@ for (const z of [-0.75, 0.55]) {
   // Difusor/disipador del módulo
   const difusor = new THREE.Mesh(
     new THREE.BoxGeometry(0.52, 3.2, 0.72),
-    mat(0x30405c, { metalness:0.95, roughness:0.22 })
+    mat(0x5d6d8a, { metalness:0.95, roughness:0.22 })
   );
   difusor.position.set(0, 0.15, z);
   ram.add(difusor);
@@ -1125,7 +1175,7 @@ const nvme = new THREE.Group();
 for (const y of [4.0, 2.2]) {
   const ssd = new THREE.Mesh(
     new THREE.BoxGeometry(0.22, 0.85, 4.0),
-    mat(0x222c40, { metalness:0.6, roughness:0.5 })
+    mat(0x46536a, { metalness:0.6, roughness:0.5 })
   );
   ssd.position.set(0, y, 1.0);
   nvme.add(ssd);
@@ -1133,7 +1183,7 @@ for (const y of [4.0, 2.2]) {
   // Etiqueta superior del disco
   const etiqueta = new THREE.Mesh(
     new THREE.BoxGeometry(0.26, 0.5, 3.0),
-    mat(0x9aa9c0, { metalness:0.4, roughness:0.7 })
+    mat(0x8b99ad, { metalness:0.4, roughness:0.7 })
   );
   etiqueta.position.set(0.03, y, 1.2);
   nvme.add(etiqueta);
@@ -1158,14 +1208,14 @@ const psu = new THREE.Group();
 
 const chasisPsu = new THREE.Mesh(
   new THREE.BoxGeometry(7.4, 6.0, 7.2),
-  mat(0x1a2233, { metalness:0.82, roughness:0.42 })
+  mat(0x44505e, { metalness:0.82, roughness:0.42 })
 );
 psu.add(chasisPsu);
 
 // Rejilla frontal (aro + aspas del ventilador de la fuente)
 const aroPsu = new THREE.Mesh(
   new THREE.TorusGeometry(2.05, 0.16, 10, 40),
-  mat(0x3a4861, { metalness:0.9, roughness:0.3 })
+  mat(0x6d7a8a, { metalness:0.9, roughness:0.3 })
 );
 aroPsu.position.set(0, 0, 3.62);
 psu.add(aroPsu);
@@ -1174,7 +1224,7 @@ const aspasPsu = [];
 for (let i = 0; i < 7; i++) {
   const pala = new THREE.Mesh(
     new THREE.BoxGeometry(1.7, 0.1, 0.5),
-    mat(0x4d5f7d, { metalness:0.6, roughness:0.5 })
+    mat(0x7b8798, { metalness:0.6, roughness:0.5 })
   );
   pala.position.set(0, 0, 3.55);
   pala.rotation.z = (i / 7) * Math.PI * 2;
@@ -1185,7 +1235,7 @@ for (let i = 0; i < 7; i++) {
 
 const bujePsu = new THREE.Mesh(
   new THREE.CylinderGeometry(0.5, 0.5, 0.5, 18),
-  mat(0x2a3448, { metalness:0.85, roughness:0.3 })
+  mat(0x55606e, { metalness:0.85, roughness:0.3 })
 );
 bujePsu.rotation.x = Math.PI / 2;
 bujePsu.position.set(0, 0, 3.6);
@@ -1195,7 +1245,7 @@ psu.add(bujePsu);
 for (const y of [-1.7, -0.6, 0.5, 1.6]) {
   const puerto = new THREE.Mesh(
     new THREE.BoxGeometry(0.55, 0.5, 0.3),
-    mat(0x0e1626, { metalness:0.5, roughness:0.6 })
+    mat(0x1c2430, { metalness:0.5, roughness:0.6 })
   );
   puerto.position.set(-3.75, y, 0);
   psu.add(puerto);
@@ -1214,14 +1264,14 @@ const ventiladores = new THREE.Group();
 for (const y of [6.0, 10.4, 14.8]) {
   const marco = new THREE.Mesh(
     new THREE.BoxGeometry(2.5, 2.5, 0.7),
-    mat(0x1c2536, { metalness:0.8, roughness:0.45 })
+    mat(0x4a5462, { metalness:0.8, roughness:0.45 })
   );
   marco.position.set(0, y, 0);
   ventiladores.add(marco);
 
   const rotor = new THREE.Mesh(
     new THREE.CylinderGeometry(1.0, 1.0, 0.22, 24),
-    mat(0x2d3a52, { metalness:0.7, roughness:0.4 })
+    mat(0x5b6776, { metalness:0.7, roughness:0.4 })
   );
   rotor.rotation.x = Math.PI / 2;
   rotor.position.set(0, y, 0.15);
@@ -1232,7 +1282,7 @@ for (const y of [6.0, 10.4, 14.8]) {
   for (let i = 0; i < 7; i++) {
     const pala = new THREE.Mesh(
       new THREE.BoxGeometry(0.85, 0.12, 0.34),
-      mat(0x55688a, { metalness:0.55, roughness:0.55 })
+      mat(0x8894a4, { metalness:0.55, roughness:0.55 })
     );
     pala.position.set(0, y, 0.2);
     pala.rotation.z = (i / 7) * Math.PI * 2;
@@ -1253,7 +1303,7 @@ const ups = new THREE.Group();
 
 const cuerpoUps = new THREE.Mesh(
   new THREE.BoxGeometry(7.0, 8.4, 6.4),
-  mat(0x1b2434, { metalness:0.8, roughness:0.45 })
+  mat(0x4a5464, { metalness:0.8, roughness:0.45 })
 );
 cuerpoUps.position.y = 4.2;
 ups.add(cuerpoUps);
@@ -1261,7 +1311,7 @@ ups.add(cuerpoUps);
 // Panel frontal con pantalla
 const panelUps = new THREE.Mesh(
   new THREE.BoxGeometry(5.6, 2.6, 0.22),
-  mat(0x0e1626, { metalness:0.6, roughness:0.4 })
+  mat(0x1c2430, { metalness:0.6, roughness:0.4 })
 );
 panelUps.position.set(0, 6.6, 3.28);
 ups.add(panelUps);
@@ -1286,7 +1336,7 @@ ups.add(botonUps);
 for (const x of [-2.1, -0.7, 0.7, 2.1]) {
   const toma = new THREE.Mesh(
     new THREE.BoxGeometry(0.72, 0.9, 0.24),
-    mat(0x2a3448, { metalness:0.6, roughness:0.5 })
+    mat(0x55606e, { metalness:0.6, roughness:0.5 })
   );
   toma.position.set(x, 3.4, 3.3);
   ups.add(toma);
@@ -1295,7 +1345,7 @@ for (const x of [-2.1, -0.7, 0.7, 2.1]) {
 // Cable hacia el servidor
 const cableUps = new THREE.Mesh(
   new THREE.CylinderGeometry(0.13, 0.13, 7.0, 10),
-  mat(0x101724, { metalness:0.3, roughness:0.9 })
+  mat(0x2a3340, { metalness:0.3, roughness:0.9 })
 );
 cableUps.position.set(3.9, 4.6, 0.4);
 cableUps.rotation.z = Math.PI / 2.1;
@@ -1312,7 +1362,7 @@ const lan = new THREE.Group();
 
 const chasisSwitch = new THREE.Mesh(
   new THREE.BoxGeometry(7.4, 1.9, 5.0),
-  mat(0x1a2333, { metalness:0.85, roughness:0.4 })
+  mat(0x46505e, { metalness:0.85, roughness:0.4 })
 );
 chasisSwitch.position.y = 4.6;
 lan.add(chasisSwitch);
@@ -1321,7 +1371,7 @@ lan.add(chasisSwitch);
 for (let i = 0; i < 8; i++) {
   const puerto = new THREE.Mesh(
     new THREE.BoxGeometry(0.62, 0.42, 0.3),
-    mat(0x0d1424, { metalness:0.5, roughness:0.6 })
+    mat(0x1e2632, { metalness:0.5, roughness:0.6 })
   );
   puerto.position.set(-2.8 + i * 0.8, 4.4, 2.55);
   lan.add(puerto);
@@ -1351,7 +1401,7 @@ coloresCable.forEach((col, i) => {
 for (const z of [-1.2, 0.9]) {
   const enlace = new THREE.Mesh(
     new THREE.CylinderGeometry(0.12, 0.12, 6.2, 8),
-    mat(0x2c3a52, { metalness:0.3, roughness:0.85 })
+    mat(0x5a6975, { metalness:0.3, roughness:0.85 })
   );
   enlace.position.set(-4.2, 4.6, z);
   enlace.rotation.z = Math.PI / 2.05;
@@ -1362,7 +1412,7 @@ for (const z of [-1.2, 0.9]) {
 for (const x of [-3.1, 3.1]) {
   const pata = new THREE.Mesh(
     new THREE.BoxGeometry(0.5, 3.7, 4.2),
-    mat(0x151d2c, { metalness:0.7, roughness:0.5 })
+    mat(0x3c4552, { metalness:0.7, roughness:0.5 })
   );
   pata.position.set(x, 1.9, 0);
   lan.add(pata);
@@ -1370,7 +1420,7 @@ for (const x of [-3.1, 3.1]) {
 
 pieza(lan, 'lan',
   { x: 12.4, y: 0, z: 1.0 },
-  { x: 14.2, y: 0.8, z: 5.4 });
+  { x: 12.6, y: 3.4, z: 4.2 });
 
 /* -------------------------------------------------------------------------
    3. INTERACTIVIDAD
@@ -1668,7 +1718,7 @@ document.addEventListener('keydown', e => {
 });
 
 /* --- 3.5 Vista explosionada / ensamblada (lerp simple, sin librerías) ---- */
-let explosionado = true;      // arranca despiezado para que se vea todo
+let explosionado = false;     // arranca ARMADO: el despiece lo hace el scroll
 const objetivos = new Map();  // posición destino de cada pieza
 
 /** Define hacia dónde debe viajar cada pieza. */
@@ -1679,16 +1729,25 @@ function fijarObjetivos(explota) {
 }
 
 const btnExplode = document.getElementById('btnExplode');
-btnExplode.addEventListener('click', () => {
-  explosionado = !explosionado;
-  fijarObjetivos(explosionado);
+
+/** Sincroniza el botón con el estado de despiece actual. */
+function reflejarBotonDespiece() {
   btnExplode.classList.toggle('on', explosionado);
   btnExplode.setAttribute('aria-pressed', String(explosionado));
   const txt = btnExplode.querySelector('.t');
-  if (txt) txt.textContent = explosionado ? 'Vista explosionada' : 'Vista ensamblada';
+  if (txt) txt.textContent = explosionado ? 'Vista ensamblada' : 'Vista explosionada';
+}
+
+btnExplode.addEventListener('click', () => {
+  explosionado = !explosionado;
+  despiecePorScroll = false;   // el control manual desactiva el despiece por scroll
+  fijarObjetivos(explosionado);
+  reflejarBotonDespiece();
 });
 
 const btnSpin = document.getElementById('btnSpin');
+btnSpin.classList.toggle('on', controls.autoRotate);
+btnSpin.setAttribute('aria-pressed', String(controls.autoRotate));
 btnSpin.addEventListener('click', () => {
   controls.autoRotate = !controls.autoRotate;
   btnSpin.classList.toggle('on', controls.autoRotate);
@@ -1697,10 +1756,64 @@ btnSpin.addEventListener('click', () => {
 
 document.getElementById('btnReset').addEventListener('click', () => {
   camera.position.set(19.5, 14.0, 26.0);
-  controls.target.set(0, 8.4, 0);
+  controls.target.set(0, 9.2, 0);
   zoomObjetivo = 1;      // descarta cualquier dolly pendiente
   controls.update();
 });
+
+/* --- 3.5b Despiece por scroll -------------------------------------------
+   El visor arranca con el PC armado y, a medida que la página baja, las
+   piezas se separan de forma progresiva hasta quedar todas visibles y
+   clicables. El progreso se calcula con la posición del visor en pantalla:
+   0 = armado (visor apenas asoma), 1 = despiezado (visor ya centrado).
+   Al subir de nuevo, el equipo se vuelve a armar solo.                        */
+let despiecePorScroll = !prefiereQuieto;   // false cuando el usuario usa el botón
+let progresoScroll    = 0;      // 0 armado .. 1 despiezado
+let progresoSuave     = 0;      // valor amortiguado que se usa para dibujar
+
+/** Mide cuánto ha avanzado el visor por la pantalla y devuelve 0..1.
+ *
+ * El visor es el primer bloque tras el hero, así que al cargar la página ya
+ * está parcialmente visible. Por eso el recorrido NO se mide desde que asoma,
+ * sino desde que su borde inferior toca el pie de la ventana (progreso 0,
+ * equipo armado) hasta que su centro llega al centro de la pantalla
+ * (progreso 1, equipo despiezado). Así el primer tramo de scroll útil es el
+ * que desarma la torre, y al volver arriba se rearma sola. */
+function calcularProgresoScroll() {
+  // Se usa la posición de scroll del documento, no la del visor: como el visor
+  // es el primer bloque tras el hero, siempre está visible al cargar, así que
+  // medir su posición daría un despiece ya empezado. Con scrollY el recorrido
+  // empieza limpio en 0 (página arriba) y termina al llegar a RECORRIDO px.
+  const vh = window.innerHeight || 1;
+
+  // El despiece se completa tras bajar algo menos de una pantalla, que es
+  // justo cuando el visor queda centrado y todas las piezas a la vista.
+  const RECORRIDO = Math.max(220, vh * 0.42);
+  const t = (window.scrollY || window.pageYOffset || 0) / RECORRIDO;
+  return Math.max(0, Math.min(1, t));
+}
+
+/** Suaviza el progreso y reparte cada pieza entre armado y despiezado. */
+function aplicarDespiecePorScroll(dt) {
+  if (!despiecePorScroll) return;
+
+  // Amortiguación exponencial: acompaña el scroll sin tirones.
+  const paso = 1 - Math.pow(0.004, Math.min(dt, 0.05));
+  progresoSuave += (progresoScroll - progresoSuave) * paso;
+
+  // Interpolación suave (smoothstep) para que el arranque y el final del
+  // recorrido no se sientan bruscos.
+  const p = progresoSuave * progresoSuave * (3 - 2 * progresoSuave);
+
+  for (const obj of animables) {
+    obj.userData.scrollPos = obj.userData.home.clone().lerp(obj.userData.exp, p);
+  }
+}
+
+/** Escucha el scroll de la página y recalcula el objetivo del despiece. */
+function actualizarScroll() { progresoScroll = calcularProgresoScroll(); }
+window.addEventListener('scroll', actualizarScroll, { passive: true });
+window.addEventListener('resize', actualizarScroll);
 
 /* --- 3.6 Bucle de render y animación ------------------------------------- */
 const reloj = new THREE.Clock();
@@ -1710,10 +1823,20 @@ function animar() {
   const dt = reloj.getDelta();
   const t  = reloj.elapsedTime;
 
-  // Lerp de las piezas hacia su posición objetivo (vista ensamblada/explosionada)
-  for (const obj of animables) {
-    const destino = objetivos.get(obj);
-    if (destino) obj.position.lerp(destino, Math.min(1, dt * 3.4));
+  // Posición de las piezas.
+  // · Con el despiece por scroll, la mezcla armado/despiezado ya viene dada
+  //   por el progreso de la página (scrollPos), así que se aplica directa.
+  // · Con el botón, se interpola hacia el objetivo fijo (lerp suave).
+  if (despiecePorScroll) {
+    aplicarDespiecePorScroll(dt);
+    for (const obj of animables) {
+      if (obj.userData.scrollPos) obj.position.copy(obj.userData.scrollPos);
+    }
+  } else {
+    for (const obj of animables) {
+      const destino = objetivos.get(obj);
+      if (destino) obj.position.lerp(destino, Math.min(1, dt * 3.4));
+    }
   }
 
   // Giro continuo de los ventiladores (GPU, radiador, chasis y fuente)
@@ -1743,7 +1866,13 @@ window.addEventListener('resize', redimensionar);
 
 /* --- 3.8 Arranque -------------------------------------------------------- */
 memorizarColores();
-fijarObjetivos(true);       // arranca en vista explosionada
+// Con movimiento reducido se muestra directamente el equipo despiezado,
+// que es el estado informativo; si no, arranca armado y lo desarma el scroll.
+fijarObjetivos(!despiecePorScroll);
+explosionado = !despiecePorScroll;
+reflejarBotonDespiece();
+actualizarScroll();
+progresoSuave = progresoScroll;
 redimensionar();
 animar();
 
@@ -1766,6 +1895,7 @@ if ('IntersectionObserver' in window) {
 } else {
   elementosReveal.forEach(el => el.classList.add('in'));   // fallback sin IO
 }
+
 </script>
 </body>
 </html>

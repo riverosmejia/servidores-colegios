@@ -39,7 +39,15 @@ para qué sirve cada uno y cuánto cuesta.
 - Un solo archivo `index.html` autocontenido (HTML + CSS + JS embebidos), sin build.
 - Three.js r160 y OrbitControls por CDN (jsdelivr) mediante `importmap`.
 - Vanilla JS, sin frameworks. `Raycaster` para hover y clic sobre las piezas.
-- Diseño responsive, dark mode, tipografías Space Grotesk e Inter (Google Fonts).
+- Diseño responsive, **superficie clara** sobre el sistema de propuestas (fondo blanco,
+  tinta verde-oscura, acento teal `#0f766e`, tipografías IBM Plex Sans y Mono).
+  El visor 3D va sobre fondo blanco con el canvas transparente.
+- **Despiece por scroll**: el equipo arranca armado y se separa progresivamente al bajar
+  la página, con interpolación suave; al subir se vuelve a armar solo. El botón
+  «Vista explosionada» sigue disponible como control manual.
+- Accesibilidad: canvas etiquetado para lectores de pantalla, botones de solo icono con
+  `aria-label`, contraste verificado ≥ 4.5:1 y respeto de `prefers-reduced-motion`
+  (sin giro automático ni despiece por scroll, mostrando el equipo ya despiezado).
 - Animación de despiece por interpolación lineal simple (`lerp`), sin librerías externas.
 - Código comentado en español.
 

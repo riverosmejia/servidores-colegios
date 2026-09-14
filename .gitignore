@@ -1,0 +1,6 @@
+# Artefactos del instalador de skills (npx skills add). No forman parte del
+# sitio publicado en GitHub Pages y pesan varios MB.
+.agents/
+.claude/
+agent/
+skills-lock.json
