@@ -45,6 +45,14 @@ para qué sirve cada uno y cuánto cuesta.
 - **Despiece por scroll**: el equipo arranca armado y se separa progresivamente al bajar
   la página, con interpolación suave; al subir se vuelve a armar solo. El botón
   «Vista explosionada» sigue disponible como control manual.
+- **Visor 3D responsive**: la cámara mide la silueta real de la escena proyectada sobre
+  sus propios ejes y calcula la distancia de encuadre para cada tamaño de pantalla, con
+  reencuadre automático al girar el móvil (`ResizeObserver`). Verificado de 375 px a 1440 px:
+  las 11 piezas quedan dentro del cuadro y clicables en todos los tamaños.
+- **Layout sobre retícula de 8px** (patrón de sistema de diseño financiero): contenedor de
+  1200 px con gutter fluido, tarjetas de 24-32 px de padding, cuatro puntos de quiebre
+  (1440 / 1024 / 768 / 375), controles con área táctil mínima de 44x44 px y footer navy
+  como superficie de cierre.
 - Accesibilidad: canvas etiquetado para lectores de pantalla, botones de solo icono con
   `aria-label`, contraste verificado ≥ 4.5:1 y respeto de `prefers-reduced-motion`
   (sin giro automático ni despiece por scroll, mostrando el equipo ya despiezado).

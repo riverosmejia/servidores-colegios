@@ -38,12 +38,28 @@
   --warn:         #b45309;
   --violet:       #7c3aed;   /* GPU 1 (visual) */
   --blue:         #1d4ed8;   /* GPU 0 (razonamiento) */
-  --radius:       14px;
-  --radius-sm:    9px;
+  /* Escala de espaciado sobre retícula de 8px */
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:24px; --s6:32px; --s7:48px; --s8:64px; --s9:96px;
+  /* Radios medidos: 4 / 8 / 12 y pill */
+  --radius:       12px;
+  --radius-sm:    8px;
+  --radius-xs:    4px;
+  --radius-pill:  9999px;
+  /* Estructura */
+  --wrap:         1200px;
+  --gutter:       clamp(16px, 4vw, 32px);
   --mono:         'IBM Plex Mono', ui-monospace, Menlo, monospace;
   --sans:         'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --shadow-card:  0 1px 2px rgba(16,32,30,.05);
+  --surface-1:    #f7f8f9;
+  --surface-2:    #ecedee;
+  --navy:         #0b2b28;
+  --navy-deep:    #071e1c;
+  --shadow-card:  0 1px 4px rgba(16,32,30,.10);
+  --shadow-elev:  0 6px 24px rgba(16,32,30,.16);
   --shadow-rec:   0 18px 44px -18px rgba(15,118,110,.35), 0 2px 6px rgba(16,32,30,.06);
+  --dur-fast:     120ms;
+  --dur-base:     240ms;
+  --ease:         cubic-bezier(.4,0,.2,1);
 }
 
 /* ---------- Reset básico ---------- */
@@ -71,7 +87,7 @@ button{ font-family:inherit; color:inherit; cursor:pointer; }
   border-bottom:1px solid var(--line);
 }
 .topbar-inner{
-  max-width:1160px; margin:0 auto; padding:0 24px;
+  max-width:var(--wrap); margin:0 auto; padding:0 var(--gutter);
   display:flex; align-items:center; gap:18px; height:62px;
 }
 .brand{ display:flex; align-items:center; gap:10px; font-weight:600; font-size:14px; letter-spacing:.2px; }
@@ -82,7 +98,7 @@ button{ font-family:inherit; color:inherit; cursor:pointer; }
 .topnav a:hover{ color:var(--accent-strong); text-decoration:none; }
 
 /* ---------- Hero ---------- */
-.hero{ max-width:1160px; margin:0 auto; padding:clamp(36px,6vw,72px) 24px 20px; }
+.hero{ max-width:var(--wrap); margin:0 auto; padding:clamp(40px,7vw,96px) var(--gutter) var(--s5); }
 .eyebrow{
   display:inline-flex; align-items:center; gap:10px;
   font-family:var(--mono); font-size:11.5px; font-weight:500;
@@ -101,7 +117,7 @@ h1 em{ font-style:normal; color:var(--accent); }
 .chip i{ width:6px; height:6px; border-radius:50%; background:var(--accent); display:block; }
 
 /* ---------- Secciones ---------- */
-.section{ max-width:1160px; margin:0 auto; padding:clamp(40px,5.5vw,72px) 24px; }
+.section{ max-width:var(--wrap); margin:0 auto; padding:clamp(48px,6vw,96px) var(--gutter); }
 .section-head{ max-width:70ch; margin-bottom:28px; }
 .kicker{
   font-family:var(--mono); font-size:11.5px; letter-spacing:.16em;
@@ -111,13 +127,18 @@ h2{ font-size:clamp(22px,3vw,34px); margin-bottom:11px; }
 .sub{ color:var(--ink-2); font-weight:300; }
 
 /* ---------- Visor 3D ---------- */
-.stage-wrap{ max-width:1160px; margin:0 auto; padding:0 24px; }
+.stage-wrap{ max-width:var(--wrap); margin:0 auto; padding:0 var(--gutter); }
 .stage{
-  position:relative; height:clamp(420px,62vh,640px);
+  position:relative;
+  /* Altura fluida y acotada: nunca aplastada ni desproporcionada. Al fijarla
+     con clamp() desde el primer render no hay salto de tamaño al cargar (CLS). */
+  height:clamp(380px, 62vh, 620px);
   border:1px solid var(--line); border-radius:var(--radius);
-  /* Fondo claro con un halo teal muy tenue para dar profundidad al modelo */
-  background:radial-gradient(120% 90% at 50% 8%, #ffffff 0%, #f1f6f5 55%, #e8f1ef 100%);
+  /* Halo teal muy tenue: da profundidad al modelo sin competir con él */
+  background:radial-gradient(120% 90% at 50% 6%, #ffffff 0%, #f4f9f8 52%, #e9f2f0 100%);
   overflow:hidden; box-shadow:var(--shadow-card);
+  /* El visor es una superficie interactiva: la rueda no arrastra la página */
+  overscroll-behavior:contain;
 }
 .stage canvas{ display:block; }
 /* Rejilla técnica sutil sobre el fondo blanco del visor */
@@ -138,10 +159,14 @@ h2{ font-size:clamp(22px,3vw,34px); margin-bottom:11px; }
 /* Controles flotantes del visor */
 .stage-tools{ position:absolute; top:14px; left:14px; z-index:4; display:flex; gap:8px; flex-wrap:wrap; max-width:calc(100% - 28px); }
 .btn{
-  border:1px solid var(--line-strong); background:rgba(255,255,255,.92); color:var(--ink);
-  border-radius:var(--radius-sm); padding:8px 13px; font-family:var(--mono);
-  font-size:12px; font-weight:500; display:inline-flex; align-items:center; gap:8px;
-  backdrop-filter:blur(8px); transition:border-color .15s, background .15s, color .15s;
+  border:1px solid var(--line-strong); background:rgba(255,255,255,.94); color:var(--ink);
+  border-radius:var(--radius-sm); padding:0 var(--s3); min-height:44px;
+  font-family:var(--mono); font-size:12px; font-weight:500;
+  display:inline-flex; align-items:center; justify-content:center; gap:var(--s2);
+  backdrop-filter:blur(8px);
+  transition:border-color var(--dur-fast) var(--ease),
+             background var(--dur-fast) var(--ease),
+             color var(--dur-fast) var(--ease);
 }
 .btn:hover{ border-color:var(--accent); background:var(--accent-soft); color:var(--accent-strong); }
 .btn.on{ border-color:var(--accent); background:var(--accent-soft); color:var(--accent-strong); box-shadow:0 0 0 3px var(--accent-ring); }
@@ -154,8 +179,12 @@ h2{ font-size:clamp(22px,3vw,34px); margin-bottom:11px; }
   box-shadow:var(--shadow-card);
 }
 .budget-label{ font-family:var(--mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
-.budget-total{ font-family:var(--mono); font-size:clamp(18px,2.4vw,25px); font-weight:600; color:var(--accent); font-variant-numeric:tabular-nums; }
-.budget-list{ margin-top:9px; display:grid; gap:2px; }
+.budget-total{
+  font-family:var(--mono); font-weight:600; color:var(--accent);
+  font-size:clamp(20px,2.6vw,28px); line-height:1.15;
+  font-variant-numeric:tabular-nums; letter-spacing:-.02em; margin-top:2px;
+}
+.budget-list{ margin-top:var(--s3); padding-top:var(--s3); border-top:1px solid var(--line); display:grid; gap:2px; }
 .budget-row{
   display:flex; justify-content:space-between; gap:16px; font-family:var(--mono);
   font-size:11px; color:var(--muted); font-variant-numeric:tabular-nums;
@@ -214,11 +243,14 @@ h2{ font-size:clamp(22px,3vw,34px); margin-bottom:11px; }
 .overlay.show{ opacity:1; pointer-events:auto; }
 
 /* ---------- Tarjetas de GPU (asignación de recursos) ---------- */
-.grid-2{ display:grid; grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); gap:20px; }
+.grid-2{ display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr)); gap:var(--s5); }
 .card{
-  border:1px solid var(--line); border-radius:var(--radius); padding:24px;
+  border:1px solid var(--line); border-radius:var(--radius);
+  padding:clamp(var(--s5), 3vw, var(--s6));
   background:#fff; position:relative; overflow:hidden; box-shadow:var(--shadow-card);
+  transition:box-shadow var(--dur-base) var(--ease), border-color var(--dur-base) var(--ease);
 }
+.card:hover{ box-shadow:var(--shadow-elev); border-color:var(--line-strong); }
 .card::before{ content:''; position:absolute; inset:0 0 auto 0; height:3px; background:var(--accent,var(--accent)); }
 .card.gpu0{ --accent:var(--blue); }
 .card.gpu1{ --accent:var(--violet); }
@@ -238,12 +270,15 @@ h2{ font-size:clamp(22px,3vw,34px); margin-bottom:11px; }
 }
 
 /* ---------- Requisitos de instalación ---------- */
-.grid-4{ display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:18px; }
+.grid-4{ display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr)); gap:var(--s4); }
 .req{
-  border:1px solid var(--line); border-radius:var(--radius); padding:22px;
-  background:var(--bg-soft); transition:border-color .2s, transform .2s, box-shadow .2s;
+  border:1px solid var(--line); border-radius:var(--radius); padding:var(--s5);
+  background:#fff;
+  transition:border-color var(--dur-base) var(--ease),
+             transform var(--dur-base) var(--ease),
+             box-shadow var(--dur-base) var(--ease);
 }
-.req:hover{ border-color:var(--line-strong); transform:translateY(-3px); box-shadow:var(--shadow-card); }
+.req:hover{ border-color:var(--line-strong); transform:translateY(-2px); box-shadow:var(--shadow-elev); }
 .req-ico{
   width:42px; height:42px; border-radius:12px; display:grid; place-items:center;
   background:var(--accent-soft); border:1px solid #cfe8e4; margin-bottom:15px;
@@ -254,38 +289,92 @@ h2{ font-size:clamp(22px,3vw,34px); margin-bottom:11px; }
 .req li{ margin-bottom:5px; }
 
 /* ---------- Footer ---------- */
-.footer{ border-top:1px solid var(--line); background:var(--bg-soft); margin-top:36px; }
-.footer-inner{ max-width:1160px; margin:0 auto; padding:clamp(38px,5.5vw,60px) 24px; text-align:center; }
-.total-label{ font-family:var(--mono); font-size:11.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--muted); }
+.footer{
+  /* Superficie navy: marca el bloque de mayor peso visual de la propuesta */
+  background:linear-gradient(180deg, var(--navy) 0%, var(--navy-deep) 100%);
+  color:#fff; margin-top:var(--s7); position:relative; overflow:hidden;
+}
+.footer::before{
+  content:''; position:absolute; inset:0; pointer-events:none; opacity:.5;
+  background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),
+                   linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);
+  background-size:56px 56px;
+  mask-image:radial-gradient(90% 70% at 50% 0%,#000 10%,transparent 100%);
+}
+.footer-inner{ position:relative; z-index:1; }
+.footer-inner{ max-width:var(--wrap); margin:0 auto; padding:clamp(48px,6vw,96px) var(--gutter); text-align:center; }
+.total-label{ font-family:var(--mono); font-size:11.5px; letter-spacing:.18em; text-transform:uppercase; color:#9fc4bf; }
 .total{
   font-family:var(--mono); font-weight:600; letter-spacing:-.03em;
-  font-size:clamp(36px,7.5vw,78px); color:var(--accent); margin:8px 0 6px;
+  font-size:clamp(36px,7.5vw,78px); color:#ffffff; margin:var(--s2) 0 var(--s1);
   font-variant-numeric:tabular-nums; line-height:1;
 }
-.total small{ font-size:.42em; font-weight:500; color:var(--ink-2); margin-left:8px; letter-spacing:0; }
-.footer-note{ font-size:13px; color:var(--muted); max-width:66ch; margin:16px auto 0; }
-.footer-repo{ margin-top:24px; font-family:var(--mono); font-size:11.5px; color:var(--muted); }
+.total small{ font-size:.42em; font-weight:500; color:#b7d4d0; margin-left:var(--s2); letter-spacing:0; }
+.footer-note{ font-size:13px; color:#a8c6c2; max-width:66ch; margin:var(--s4) auto 0; line-height:1.7; }
+.footer-repo{ margin-top:var(--s5); font-family:var(--mono); font-size:11.5px; color:#8fb3af; }
+.footer-repo a{ color:#7fd8cb; }
 
 /* ---------- Animación de aparición ---------- */
 .reveal{ opacity:0; transform:translateY(16px); transition:opacity .6s ease, transform .6s ease; }
 .reveal.in{ opacity:1; transform:none; }
 
-/* ---------- Responsive ---------- */
+/* ---------- Responsive ----------
+   Cuatro puntos de quiebre: 1440 escritorio amplio, 1024 portátil,
+   768 tableta y 375 móvil. El objetivo es que el visor 3D siga siendo el
+   protagonista en todos: nunca se aplasta ni queda tapado por los paneles. */
+
+/* Portátil: la columna se ensancha y los requisitos pasan a 2x2 */
+@media (max-width:1024px){
+  :root{ --wrap:100%; }
+  .grid-4{ grid-template-columns:repeat(2,1fr); }
+}
+
+/* Tableta: el presupuesto deja de flotar sobre el modelo y baja a una tarjeta
+   propia debajo del visor, para que el 3D quede libre de solapes. */
 @media (max-width:900px){
   .topnav{ display:none; }
-  .budget-list{ display:none; }
-  .stage-tools .btn span.t{ display:none; }
-  .stage{ height:min(72vh,500px); }
+  .grid-4{ grid-template-columns:repeat(2,1fr); }
+
+  .budget{
+    position:static; width:auto; text-align:left; margin:var(--s4) 0 0;
+    border-radius:var(--radius); padding:var(--s4); box-shadow:var(--shadow-card);
+  }
+  .budget-list{ grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:var(--s2) var(--s5); display:grid; }
+  .budget-total{ font-size:clamp(24px,5vw,32px); }
+
+  /* Los controles bajan a la esquina inferior del visor para no competir
+     con las pistas de uso ni con el título */
+  .stage-tools{ top:auto; bottom:var(--s3); left:var(--s3); }
+  .stage-hint{ left:var(--s3); bottom:calc(var(--s3) + 52px); }
 }
-@media (max-width:560px){
-  .budget{ padding:9px 12px; }
-  .budget-total{ font-size:16px; }
+
+/* Móvil: una columna, controles a ancho completo y pistas reducidas */
+@media (max-width:640px){
+  :root{ --gutter:16px; }
+  .grid-4{ grid-template-columns:1fr; }
+  h1{ font-size:clamp(26px,7.5vw,34px); }
+  .stage{ height:min(56vh,420px); border-radius:var(--radius-sm); }
+  .stage-tools{ left:var(--s3); right:var(--s3); bottom:var(--s3); max-width:none; gap:var(--s2); }
+  .stage-tools .btn span.t{ display:none; }   /* sólo iconos */
+  .stage-tools .btn{ flex:1 1 0; min-width:44px; }
+  .stage-hint{ left:var(--s3); bottom:calc(var(--s3) + 54px); font-size:10.5px; }
   .stage-hint span.hide-sm{ display:none; }
+  .budget-list{ grid-template-columns:1fr 1fr; }
+  .panel{ width:100%; }
 }
+
+/* Móvil estrecho: el desglose en una sola columna, siempre legible */
+@media (max-width:400px){
+  .budget-list{ grid-template-columns:1fr; }
+  .budget-row .r-name{ max-width:none; }
+}
+
 @media (prefers-reduced-motion:reduce){
   html{ scroll-behavior:auto; }
   .reveal{ opacity:1; transform:none; transition:none; }
   .panel{ transition:none; }
+  .card, .req, .btn{ transition:none; }
+  .card:hover, .req:hover{ transform:none; }
 }
 
 /* ---------- Impresión ---------- */
@@ -697,6 +786,8 @@ const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(0xf2f7f6, 0.014);
 
 const camera = new THREE.PerspectiveCamera(48, stage.clientWidth/stage.clientHeight, 0.1, 220);
+// Posición provisional: el encuadre real se calcula al arrancar,
+// cuando ya se conocen el tamaño del visor y las piezas.
 camera.position.set(19.5, 14.0, 26.0);
 
 /* Preferencia de accesibilidad: si el sistema pide menos movimiento, la escena
@@ -721,8 +812,8 @@ controls.dampingFactor = 0.06;
      Con un paso del 8.5 % por muesca, el recorrido completo son 21 muescas
      hacia adentro y 7 hacia afuera: la diferencia es inherente al zoom
      proporcional, donde acercarse recorre un factor mayor que alejarse. */
-const DIST_MIN = 6;
-const DIST_MAX = 55;
+let DIST_MIN = 6;
+let DIST_MAX = 55;   // los recalcula encuadrarEscena()
 controls.minDistance   = DIST_MIN;
 controls.maxDistance   = DIST_MAX;
 controls.enableZoom    = false;     // el dolly se aplica con nuestra amortiguación
@@ -1743,6 +1834,7 @@ btnExplode.addEventListener('click', () => {
   despiecePorScroll = false;   // el control manual desactiva el despiece por scroll
   fijarObjetivos(explosionado);
   reflejarBotonDespiece();
+  encuadrarCuandoAsiente();    // se reencuadra cuando el movimiento termina
 });
 
 const btnSpin = document.getElementById('btnSpin');
@@ -1755,10 +1847,10 @@ btnSpin.addEventListener('click', () => {
 });
 
 document.getElementById('btnReset').addEventListener('click', () => {
-  camera.position.set(19.5, 14.0, 26.0);
-  controls.target.set(0, 9.2, 0);
-  zoomObjetivo = 1;      // descarta cualquier dolly pendiente
-  controls.update();
+  // Se reencuadra con la distancia que corresponde al tamaño actual del visor
+  _encuadre = null;
+  camera.position.set(19.5, 14.0, 26.0);   // restablece el ángulo de vista
+  encuadrarEscena();
 });
 
 /* --- 3.5b Despiece por scroll -------------------------------------------
@@ -1855,14 +1947,149 @@ function animar() {
   renderer.render(scene, camera);
 }
 
+/* --- 3.7b Encuadre adaptativo al tamaño del visor -------------------------
+   El visor cambia mucho de proporción: en móvil es alto y angosto, en
+   escritorio ancho y bajo. Con una distancia de cámara fija, en móvil la torre
+   se sale del cuadro y en escritorio sobra aire. Aquí la distancia se calcula
+   según lo que la escena ocupa realmente en pantalla.
+
+   Detalle importante: no basta con medir la caja en coordenadas de mundo.
+   Como la cámara mira en diagonal y el despiece separa las piezas en
+   profundidad, la silueta proyectada es bastante más alta que la caja del
+   mundo. Por eso se proyectan las esquinas de cada pieza sobre los ejes de la
+   cámara y se unen los rangos: así el encuadre es exacto y no depende de
+   factores ajustados a ojo.                                                    */
+let _encuadre = null;
+
+/** Centro y tamaño aparente de la escena despiezada, vistos desde la cámara. */
+function medirEscena() {
+  if (_encuadre) return _encuadre;
+
+  const dir = camera.position.clone().sub(controls.target).normalize();
+  const arriba = new THREE.Vector3(0, 1, 0);
+  const derecha = new THREE.Vector3().crossVectors(dir, arriba).normalize();
+  const arribaCam = new THREE.Vector3().crossVectors(derecha, dir).normalize();
+
+  // Centro de la escena despiezada (punto de partida para proyectar)
+  const cajaTotal = new THREE.Box3();
+  for (const obj of animables) {
+    obj.updateMatrixWorld(true);
+    cajaTotal.expandByObject(obj);
+  }
+  const centroCaja = cajaTotal.getCenter(new THREE.Vector3());
+
+  /* Silueta real: se proyectan las esquinas de cada pieza por separado y se
+     unen los rangos. Medir sólo la caja envolvente daría un encuadre demasiado
+     alejado, porque esa caja incluye el vacío entre la UPS y el switch.
+     Se guarda también el desplazamiento del centro óptico: el modelo debe
+     quedar centrado en lo que se VE, no en el centro geométrico de una caja
+     con huecos, o los extremos (el switch abajo) se salen del cuadro. */
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  const v = new THREE.Vector3();
+
+  for (const obj of animables) {
+    const caja = new THREE.Box3().setFromObject(obj);
+    const { min, max } = caja;
+    for (const x of [min.x, max.x])
+      for (const y of [min.y, max.y])
+        for (const z of [min.z, max.z]) {
+          v.set(x, y, z).sub(centroCaja);
+          minX = Math.min(minX, v.dot(derecha));
+          maxX = Math.max(maxX, v.dot(derecha));
+          minY = Math.min(minY, v.dot(arribaCam));
+          maxY = Math.max(maxY, v.dot(arribaCam));
+        }
+  }
+
+  // Centro óptico: se desplaza desde el centro de la caja hasta el centro de
+  // la silueta proyectada, para que el encuadre quede equilibrado.
+  const centro = centroCaja.clone()
+    .addScaledVector(derecha,  (minX + maxX) / 2)
+    .addScaledVector(arribaCam, (minY + maxY) / 2);
+
+  _encuadre = { ancho: maxX - minX, alto: maxY - minY, centro };
+  return _encuadre;
+}
+
+/** Distancia a la que la escena completa entra con un 14% de aire. */
+function distanciaDeEncuadre() {
+  const { ancho, alto } = medirEscena();
+  const asp = camera.aspect || 1;
+  const fovRad = THREE.MathUtils.degToRad(camera.fov);
+  const margen = 1.14;
+
+  // La distancia la manda el eje más restrictivo: alto o ancho.
+  const porAlto  = (alto  * margen / 2) / Math.tan(fovRad / 2);
+  const porAncho = (ancho * margen / 2) / (Math.tan(fovRad / 2) * asp);
+  return Math.max(porAlto, porAncho);
+}
+
+/** Coloca la cámara encuadrando la escena, conservando el ángulo de vista. */
+/* Encuadre diferido: mientras las piezas viajan hacia su posición despiezada
+   la silueta todavía es más pequeña que la definitiva, así que medir en ese
+   momento deja el encuadre corto y algún extremo se sale del cuadro. Se espera
+   a que la animación se asiente y entonces se reencuadra una sola vez. */
+let encuadrePendiente = 0;
+function encuadrarCuandoAsiente(retraso = 900) {
+  clearTimeout(encuadrePendiente);
+  encuadrePendiente = setTimeout(() => {
+    _encuadre = null;          // se remide con las piezas ya quietas
+    encuadrarEscena();
+  }, retraso);
+}
+
+function encuadrarEscena() {
+  const { centro } = medirEscena();
+  controls.target.copy(centro);
+
+  const distancia = distanciaDeEncuadre();
+  const direccion = camera.position.clone().sub(centro);
+  if (direccion.lengthSq() < 1e-6) direccion.set(0.55, 0.42, 0.72);  // ángulo inicial
+  direccion.normalize();
+
+  camera.position.copy(centro).add(direccion.multiplyScalar(distancia));
+
+  // Los límites del zoom acompañan al encuadre del dispositivo actual, así el
+  // rango de acercamiento es equivalente en un móvil y en un monitor grande.
+  DIST_MIN = Math.max(4, distancia * 0.22);
+  DIST_MAX = distancia * 1.6;
+  controls.minDistance = DIST_MIN;
+  controls.maxDistance = DIST_MAX;
+
+  zoomObjetivo = 1;
+  controls.update();
+}
+
 /* --- 3.7 Ajuste responsive del lienzo ------------------------------------ */
 function redimensionar() {
   const w = stage.clientWidth, h = stage.clientHeight;
+  if (!w || !h) return;
+
+  // Se invalida la medida y se recalcula contra el aspecto nuevo
+  const aspectoPrevio = camera.aspect;
   camera.aspect = w / h;
   camera.updateProjectionMatrix();
   renderer.setSize(w, h);
+  _encuadre = null;
+
+  // Sólo se reencuadra si el aspecto cambió de verdad (rotación de móvil u
+  // otro dispositivo). En un resize cualquiera se respeta el zoom del usuario.
+  if (Math.abs(camera.aspect - aspectoPrevio) > 0.01) encuadrarEscena();
 }
 window.addEventListener('resize', redimensionar);
+
+/* El visor no sólo cambia de tamaño con la ventana: también al girar el móvil,
+   al abrir el panel lateral o al recomponerse el layout en un punto de quiebre.
+   Un ResizeObserver sobre el propio contenedor cubre todos esos casos y
+   mantiene el canvas siempre alineado con su caja. */
+if ('ResizeObserver' in window) {
+  let cuadroPendiente = 0;
+  const ro = new ResizeObserver(() => {
+    cancelAnimationFrame(cuadroPendiente);
+    cuadroPendiente = requestAnimationFrame(() => { redimensionar(); actualizarScroll(); });
+  });
+  ro.observe(stage);
+}
 
 /* --- 3.8 Arranque -------------------------------------------------------- */
 memorizarColores();
@@ -1874,6 +2101,8 @@ reflejarBotonDespiece();
 actualizarScroll();
 progresoSuave = progresoScroll;
 redimensionar();
+encuadrarEscena();          // encuadre inmediato, para que no haya salto visible
+encuadrarCuandoAsiente();   // y ajuste fino cuando el despiece ya se asentó
 animar();
 
 /* Ganchos de depuración: permiten auditar el encuadre y las piezas desde
@@ -1882,6 +2111,9 @@ window.__PIEZAS = interactivos;
 window.__CAMARA = camera;
 window.__ESCENA = scene;
 window.__CONTROLS = controls;
+window.__MEDIR = medirEscena;
+window.__ENCUADRAR = encuadrarEscena;
+window.__ENCUADRE_DIST = distanciaDeEncuadre;
 
 /* --- 3.9 Aparición de secciones al hacer scroll -------------------------- */
 const elementosReveal = document.querySelectorAll('.reveal');
