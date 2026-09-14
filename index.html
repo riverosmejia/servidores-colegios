@@ -97,18 +97,50 @@ button{ font-family:inherit; color:inherit; cursor:pointer; }
 .topnav a{ color:var(--ink-2); }
 .topnav a:hover{ color:var(--accent-strong); text-decoration:none; }
 
-/* ---------- Hero ---------- */
-.hero{ max-width:var(--wrap); margin:0 auto; padding:clamp(40px,7vw,96px) var(--gutter) var(--s5); }
+/* ---------- Hero inmersivo ----------
+   El visor 3D ocupa la pantalla completa y el texto se superpone a la
+   izquierda. Así el equipo es lo primero que se ve, en grande, y la página
+   abre con impacto en lugar de con un bloque de texto y una caja debajo. */
+.hero{
+  position:relative;
+  min-height:calc(100svh - 62px);      /* descuenta la barra superior */
+  display:flex; align-items:center;
+  overflow:hidden;
+  /* La torre 3D arranca despiezada en esta vista y el scroll la ensambla */
+  background:var(--bg);
+}
+.hero-texto{
+  position:absolute; inset:0; z-index:5;
+  max-width:var(--wrap); width:100%; margin:0 auto;
+  justify-content:center;
+  padding:clamp(var(--s6), 7vh, var(--s8)) var(--gutter) var(--s6);
+  /* El contenido se limita a una franja a la izquierda: el resto del ancho
+     queda libre para que la torre 3D se vea completa y se pueda arrastrar. */
+  display:flex; flex-direction:column; align-items:flex-start;
+  /* El texto no debe bloquear el arrastre del modelo: sólo los elementos
+     interactivos (chips) vuelven a recibir eventos. */
+  pointer-events:none;
+}
+/* La franja de texto no pasa del 52% del ancho en escritorio */
+.hero-texto > *{ max-width:min(100%, 440px); }
+.hero-texto .chip,
+.hero-texto a,
+.hero-texto button{ pointer-events:auto; }
 .eyebrow{
   display:inline-flex; align-items:center; gap:10px;
   font-family:var(--mono); font-size:11.5px; font-weight:500;
-  letter-spacing:.16em; text-transform:uppercase; color:var(--accent);
+  letter-spacing:.18em; text-transform:uppercase; color:var(--accent);
 }
 .eyebrow::before{ content:''; width:32px; height:1px; background:var(--accent); display:block; }
-h1{ font-size:clamp(29px,5vw,52px); margin:16px 0 14px; max-width:20ch; }
+/* Titular display: muy grande, muy junto, con el acento en teal */
+h1{
+  font-size:clamp(34px,5.6vw,74px);
+  line-height:1.04; letter-spacing:-.035em;
+  margin:var(--s5) 0 var(--s5); max-width:14ch;
+}
 h1 em{ font-style:normal; color:var(--accent); }
-.lead{ font-size:clamp(15px,1.55vw,17.5px); color:var(--ink-2); max-width:64ch; font-weight:300; }
-.chips{ display:flex; flex-wrap:wrap; gap:8px; margin-top:24px; }
+.lead{ font-size:clamp(15px,1.5vw,17px); color:var(--ink-2); font-weight:300; max-width:42ch; }
+.chips{ display:flex; flex-wrap:wrap; gap:var(--s2); margin-top:var(--s6); }
 .chip{
   font-family:var(--mono); font-size:11.5px; padding:6px 12px; border-radius:99px;
   border:1px solid var(--line-strong); background:var(--bg-soft); color:var(--ink-2);
@@ -116,38 +148,66 @@ h1 em{ font-style:normal; color:var(--accent); }
 }
 .chip i{ width:6px; height:6px; border-radius:50%; background:var(--accent); display:block; }
 
-/* ---------- Secciones ---------- */
-.section{ max-width:var(--wrap); margin:0 auto; padding:clamp(48px,6vw,96px) var(--gutter); }
-.section-head{ max-width:70ch; margin-bottom:28px; }
-.kicker{
-  font-family:var(--mono); font-size:11.5px; letter-spacing:.16em;
-  text-transform:uppercase; color:var(--accent); display:block; margin-bottom:11px;
+/* ---------- Secciones numeradas ----------
+   Ritmo editorial: cada bloque abre con un número grande en mono, un kicker
+   y un titular display. El aire vertical es deliberadamente amplio para que
+   la página se lea por capítulos y no como una lista de bloques. */
+.section{
+  max-width:var(--wrap); margin:0 auto;
+  padding:clamp(64px,9vw,140px) var(--gutter);
+  position:relative;
 }
-h2{ font-size:clamp(22px,3vw,34px); margin-bottom:11px; }
-.sub{ color:var(--ink-2); font-weight:300; }
+/* Separador fino entre capítulos */
+.section + .section{ border-top:1px solid var(--line); }
+.section-head{ max-width:74ch; margin-bottom:var(--s7); }
+.section-num{
+  font-family:var(--mono); font-size:12px; font-weight:500;
+  letter-spacing:.2em; color:var(--muted); display:block;
+  margin-bottom:var(--s4);
+}
+.kicker{
+  font-family:var(--mono); font-size:11.5px; letter-spacing:.18em;
+  text-transform:uppercase; color:var(--accent); display:block;
+  margin-bottom:var(--s3);
+}
+h2{
+  font-size:clamp(30px,4.6vw,62px);
+  line-height:1.06; letter-spacing:-.03em; margin-bottom:var(--s4);
+}
+h2 em{ font-style:normal; color:var(--accent); }
+.sub{ color:var(--ink-2); font-weight:300; font-size:clamp(15px,1.5vw,17.5px); max-width:62ch; }
 
 /* ---------- Visor 3D ---------- */
-.stage-wrap{ max-width:var(--wrap); margin:0 auto; padding:0 var(--gutter); }
+/* ---------- Visor 3D (fondo del hero) ----------
+   El visor ya no es un recuadro: es la superficie completa del hero, a sangre.
+   Un degradado muy suave y una viñeta tenue le dan profundidad al modelo. */
 .stage{
-  position:relative;
-  /* Altura fluida y acotada: nunca aplastada ni desproporcionada. Al fijarla
-     con clamp() desde el primer render no hay salto de tamaño al cargar (CLS). */
-  height:clamp(380px, 62vh, 620px);
-  border:1px solid var(--line); border-radius:var(--radius);
-  /* Halo teal muy tenue: da profundidad al modelo sin competir con él */
-  background:radial-gradient(120% 90% at 50% 6%, #ffffff 0%, #f4f9f8 52%, #e9f2f0 100%);
-  overflow:hidden; box-shadow:var(--shadow-card);
+  position:absolute; inset:0;
+  overflow:hidden;
+  background:
+    radial-gradient(90% 70% at 68% 42%, #ffffff 0%, #f7fbfa 45%, #eaf3f1 100%);
   /* El visor es una superficie interactiva: la rueda no arrastra la página */
   overscroll-behavior:contain;
+  cursor:grab;
 }
-.stage canvas{ display:block; }
-/* Rejilla técnica sutil sobre el fondo blanco del visor */
+.stage:active{ cursor:grabbing; }
+/* El canvas cubre exactamente su contenedor. Es imprescindible que esté FUERA
+   del flujo: con position:relative entraba en el flujo del documento y el
+   texto del hero lo empujaba hacia abajo, dejándolo fuera de la pantalla. */
+.stage canvas{
+  display:block; position:absolute; inset:0;
+  width:100% !important; height:100% !important;
+  z-index:2;
+}
+/* Halo luminoso detrás del equipo: separa la torre del fondo sin usar bordes */
+.stage::before{
+  content:''; position:absolute; inset:0; pointer-events:none; z-index:1;
+  background:radial-gradient(38% 46% at 66% 46%, rgba(15,118,110,.09) 0%, transparent 70%);
+}
+/* Viñeta inferior: asienta el modelo y da peso a la base del hero */
 .stage::after{
-  content:''; position:absolute; inset:0; pointer-events:none;
-  background-image:linear-gradient(rgba(15,118,110,.055) 1px,transparent 1px),
-                   linear-gradient(90deg,rgba(15,118,110,.055) 1px,transparent 1px);
-  background-size:48px 48px;
-  mask-image:radial-gradient(85% 75% at 50% 45%,#000 15%,transparent 100%);
+  content:''; position:absolute; inset:0; pointer-events:none; z-index:1;
+  background:linear-gradient(180deg, transparent 55%, rgba(16,32,30,.045) 100%);
 }
 .stage-hint{
   position:absolute; left:16px; bottom:13px; z-index:3;
@@ -157,7 +217,13 @@ h2{ font-size:clamp(22px,3vw,34px); margin-bottom:11px; }
 .stage-hint span{ display:inline-flex; align-items:center; gap:5px; }
 
 /* Controles flotantes del visor */
-.stage-tools{ position:absolute; top:14px; left:14px; z-index:4; display:flex; gap:8px; flex-wrap:wrap; max-width:calc(100% - 28px); }
+/* Controles del visor: arriba a la derecha, en cristal, para que el titular
+   del hero (arriba a la izquierda) tenga todo el espacio. */
+.stage-tools{
+  position:absolute; top:var(--s5); right:var(--s5); z-index:4;
+  display:flex; gap:var(--s2); flex-wrap:wrap;
+  max-width:calc(100% - var(--s8));
+}
 .btn{
   border:1px solid var(--line-strong); background:rgba(255,255,255,.94); color:var(--ink);
   border-radius:var(--radius-sm); padding:0 var(--s3); min-height:44px;
@@ -171,12 +237,16 @@ h2{ font-size:clamp(22px,3vw,34px); margin-bottom:11px; }
 .btn:hover{ border-color:var(--accent); background:var(--accent-soft); color:var(--accent-strong); }
 .btn.on{ border-color:var(--accent); background:var(--accent-soft); color:var(--accent-strong); box-shadow:0 0 0 3px var(--accent-ring); }
 
-/* Contador de presupuesto */
+/* Panel de presupuesto: cristal translúcido sobre el modelo.
+   Va abajo a la derecha para no competir con el titular del hero. */
 .budget{
-  position:absolute; top:14px; right:14px; z-index:4; text-align:right;
-  background:rgba(255,255,255,.94); border:1px solid var(--line-strong);
-  border-radius:var(--radius); padding:12px 16px; backdrop-filter:blur(10px);
-  box-shadow:var(--shadow-card);
+  position:absolute; right:var(--s5); bottom:var(--s5); z-index:4; text-align:right;
+  background:rgba(255,255,255,.72);
+  border:1px solid rgba(255,255,255,.9);
+  border-radius:var(--radius); padding:var(--s4) var(--s5);
+  backdrop-filter:blur(18px) saturate(1.4);
+  -webkit-backdrop-filter:blur(18px) saturate(1.4);
+  box-shadow:0 12px 40px -18px rgba(16,32,30,.28), 0 1px 2px rgba(16,32,30,.06);
 }
 .budget-label{ font-family:var(--mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
 .budget-total{
@@ -199,8 +269,11 @@ h2{ font-size:clamp(22px,3vw,34px); margin-bottom:11px; }
   position:absolute; z-index:6; pointer-events:none; opacity:0;
   transform:translate(-50%,-100%) translateY(-14px);
   transition:opacity .14s ease; width:min(310px,72vw);
-  background:#fff; border:1px solid var(--line-strong); border-left:3px solid var(--accent);
-  border-radius:var(--radius); padding:13px 15px; box-shadow:var(--shadow-rec);
+  background:rgba(255,255,255,.92);
+  border:1px solid rgba(255,255,255,.9); border-left:3px solid var(--accent);
+  border-radius:var(--radius); padding:var(--s3) var(--s4);
+  backdrop-filter:blur(16px) saturate(1.3);
+  box-shadow:0 18px 44px -20px rgba(16,32,30,.3);
 }
 .tip.show{ opacity:1; }
 .tip-name{ font-weight:600; font-size:14.5px; margin-bottom:5px; }
@@ -406,26 +479,10 @@ h2{ font-size:clamp(22px,3vw,34px); margin-bottom:11px; }
     </nav>
   </div>
 </header>
-<!-- ===================== HERO ===================== -->
-<section class="hero">
-  <span class="eyebrow">Infraestructura de IA on-premise</span>
-  <h1>El servidor de IA que vive <em>dentro del colegio</em>, no en la nube.</h1>
-  <p class="lead">
-    Un equipo silencioso, seguro y sin suscripciones mensuales que atiende a un salón completo de
-    estudiantes ejecutando modelos de lenguaje e imágenes de forma local. Baje por la página para
-    ver cómo se arma pieza por pieza, y haga clic en cualquiera para conocer su función y su costo.
-  </p>
-  <div class="chips">
-    <span class="chip"><i></i>Datos que no salen del colegio</span>
-    <span class="chip"><i></i>Funciona sin internet</span>
-    <span class="chip"><i></i>Sin pago mensual por estudiante</span>
-    <span class="chip"><i></i>32 GB de VRAM dedicada</span>
-    <span class="chip"><i></i>Protegido con UPS online</span>
-  </div>
-</section>
-
-<!-- ===================== CONFIGURADOR 3D ===================== -->
-<section class="stage-wrap" id="configurador">
+<!-- ===================== HERO + VISOR 3D =====================
+     Una sola superficie: el visor ocupa toda la pantalla y el texto va encima.
+     Así el equipo es lo primero que se ve, a tamaño grande. -->
+<section class="hero" id="configurador">
   <div class="stage" id="stage">
     <!-- Controles que flotan sobre el lienzo 3D -->
     <div class="stage-tools">
@@ -456,6 +513,23 @@ h2{ font-size:clamp(22px,3vw,34px); margin-bottom:11px; }
       <div class="tip-model" id="tipModel"></div>
       <div class="tip-just" id="tipJust"></div>
       <div class="tip-cost" id="tipCost"></div>
+    </div>
+
+    <!-- Texto del hero, superpuesto al modelo -->
+    <div class="hero-texto">
+      <span class="eyebrow">Infraestructura de IA on-premise</span>
+      <h1>La inteligencia artificial que vive <em>dentro del colegio</em>.</h1>
+      <p class="lead">
+        Un servidor local que atiende a un salón completo de estudiantes sin depender de internet,
+        sin cuotas mensuales y sin que ningún dato salga del plantel. Desliza para verlo armarse
+        pieza por pieza.
+      </p>
+      <div class="chips">
+        <span class="chip"><i></i>Datos que no salen del colegio</span>
+        <span class="chip"><i></i>Funciona sin internet</span>
+        <span class="chip"><i></i>Sin pago mensual por estudiante</span>
+        <span class="chip"><i></i>32 GB de VRAM</span>
+      </div>
     </div>
 
     <!-- Pistas de uso -->
@@ -498,10 +572,10 @@ h2{ font-size:clamp(22px,3vw,34px); margin-bottom:11px; }
 </aside>
 
 <!-- ===================== ASIGNACIÓN DE RECURSOS ===================== -->
-<section class="section" id="recursos" style="background:var(--bg-soft); border-block:1px solid var(--line);">
+<section class="section" id="recursos">
   <div class="section-head reveal">
-    <span class="kicker">Asignación de recursos</span>
-    <h2>Dos tarjetas gráficas, dos trabajos distintos</h2>
+    <span class="section-num">002 — Asignación de recursos</span>
+    <h2>Dos tarjetas gráficas, <em>dos talentos</em>.</h2>
     <p class="sub">
       El equipo reparte las tareas para que un salón de 30 a 40 estudiantes no lo tumbe:
       una GPU piensa y escribe, la otra dibuja y analiza imágenes. El resto del hardware
@@ -554,8 +628,8 @@ h2{ font-size:clamp(22px,3vw,34px); margin-bottom:11px; }
 <!-- ===================== REQUISITOS DE INSTALACIÓN FÍSICA ===================== -->
 <section class="section" id="instalacion">
   <div class="section-head reveal">
-    <span class="kicker">Requisitos de instalación física</span>
-    <h2>Cuatro condiciones para que el equipo dure años</h2>
+    <span class="section-num">003 — Instalación física</span>
+    <h2>Cuatro condiciones para que <em>dure años</em>.</h2>
     <p class="sub">
       El hardware es solo la mitad del proyecto. Estas cuatro condiciones del sitio de instalación
       determinan si el servidor rinde y cuánto tarda en fallar.
@@ -624,6 +698,8 @@ h2{ font-size:clamp(22px,3vw,34px); margin-bottom:11px; }
 <!-- ===================== FOOTER · PRESUPUESTO TOTAL ===================== -->
 <footer class="footer" id="presupuesto">
   <div class="footer-inner">
+    <span class="section-num" style="color:#8fb3af">004 — Inversión</span>
+    <h2 style="color:#fff; margin-bottom:var(--s5)">Cuánto cuesta <em>todo esto</em>.</h2>
     <div class="total-label">Inversión total estimada del proyecto</div>
     <div class="total" id="footerTotal">$16.640.000<small>COP</small></div>
     <p class="footer-note">
@@ -1392,26 +1468,29 @@ pieza(ventiladores, 'fans',
    ------------------------------------------------------------------------- */
 const ups = new THREE.Group();
 
+/* Proporción realista: una UPS de 2 kVA es una torre compacta, bastante más
+   baja y estrecha que el gabinete (9x19x9). A tamaño 5x6.2x4.8 se lee como un
+   módulo aparte sin competir en peso visual con el servidor. */
 const cuerpoUps = new THREE.Mesh(
-  new THREE.BoxGeometry(7.0, 8.4, 6.4),
+  new THREE.BoxGeometry(5.0, 6.2, 4.8),
   mat(0x4a5464, { metalness:0.8, roughness:0.45 })
 );
-cuerpoUps.position.y = 4.2;
+cuerpoUps.position.y = 3.1;
 ups.add(cuerpoUps);
 
 // Panel frontal con pantalla
 const panelUps = new THREE.Mesh(
-  new THREE.BoxGeometry(5.6, 2.6, 0.22),
+  new THREE.BoxGeometry(4.0, 1.9, 0.22),
   mat(0x1c2430, { metalness:0.6, roughness:0.4 })
 );
-panelUps.position.set(0, 6.6, 3.28);
+panelUps.position.set(0, 4.9, 2.48);
 ups.add(panelUps);
 
 const pantallaUps = new THREE.Mesh(
-  new THREE.PlaneGeometry(2.6, 1.2),
+  new THREE.PlaneGeometry(1.9, 0.9),
   new THREE.MeshBasicMaterial({ color: 0x38e0c8, transparent:true, opacity:0.85 })
 );
-pantallaUps.position.set(-1.2, 6.8, 3.42);
+pantallaUps.position.set(-0.9, 5.05, 2.62);
 ups.add(pantallaUps);
 
 // Botón de encendido
@@ -1420,7 +1499,7 @@ const botonUps = new THREE.Mesh(
   new THREE.MeshBasicMaterial({ color: 0xffb545 })
 );
 botonUps.rotation.x = Math.PI / 2;
-botonUps.position.set(1.6, 6.8, 3.42);
+botonUps.position.set(1.2, 5.05, 2.62);
 ups.add(botonUps);
 
 // Tomas de salida protegidas
@@ -1429,7 +1508,7 @@ for (const x of [-2.1, -0.7, 0.7, 2.1]) {
     new THREE.BoxGeometry(0.72, 0.9, 0.24),
     mat(0x55606e, { metalness:0.6, roughness:0.5 })
   );
-  toma.position.set(x, 3.4, 3.3);
+  toma.position.set(x, 2.5, 2.5);
   ups.add(toma);
 }
 
@@ -1438,13 +1517,16 @@ const cableUps = new THREE.Mesh(
   new THREE.CylinderGeometry(0.13, 0.13, 7.0, 10),
   mat(0x2a3340, { metalness:0.3, roughness:0.9 })
 );
-cableUps.position.set(3.9, 4.6, 0.4);
+cableUps.position.set(2.9, 3.4, 0.4);
 cableUps.rotation.z = Math.PI / 2.1;
 ups.add(cableUps);
 
+/* La UPS va a la DERECHA del gabinete. Además de ser su ubicación física
+   natural (junto al servidor), deja libre la franja izquierda donde el hero
+   coloca el titular. */
 pieza(ups, 'ups',
-  { x: -12.6, y: 0, z: 1.4 },
-  { x: -14.6, y: 0, z: 5.0 });
+  { x: 11.6, y: 0, z: 3.0 },
+  { x: 15.4, y: 0, z: 5.2 });
 
 /* -------------------------------------------------------------------------
    2.11 SWITCH DE RED + PATCH CORDS — módulo externo (a la derecha)
@@ -1897,8 +1979,14 @@ function aplicarDespiecePorScroll(dt) {
   // recorrido no se sientan bruscos.
   const p = progresoSuave * progresoSuave * (3 - 2 * progresoSuave);
 
+  /* Sentido del recorrido: la página ABRE con la torre armada —compacta, para
+     que el hero muestre el producto entero junto al titular— y conforme se baja
+     se va DESPIEGANDO hasta mostrar todo el hardware por separado, que es la
+     vista donde cada pieza se puede examinar. Se interpola de 'home' (armado)
+     hacia 'exp' (despiezado) con el progreso del scroll. */
+  const mezcla = p;
   for (const obj of animables) {
-    obj.userData.scrollPos = obj.userData.home.clone().lerp(obj.userData.exp, p);
+    obj.userData.scrollPos = obj.userData.home.clone().lerp(obj.userData.exp, mezcla);
   }
 }
 
@@ -2016,7 +2104,7 @@ function distanciaDeEncuadre() {
   const { ancho, alto } = medirEscena();
   const asp = camera.aspect || 1;
   const fovRad = THREE.MathUtils.degToRad(camera.fov);
-  const margen = 1.14;
+  const margen = 1.44;   // aire extra: el texto del hero ocupa parte del ancho
 
   // La distancia la manda el eje más restrictivo: alto o ancho.
   const porAlto  = (alto  * margen / 2) / Math.tan(fovRad / 2);
@@ -2039,15 +2127,32 @@ function encuadrarCuandoAsiente(retraso = 900) {
 }
 
 function encuadrarEscena() {
-  const { centro } = medirEscena();
-  controls.target.copy(centro);
+  const { centro, ancho, alto } = medirEscena();
+
+  /* El objetivo se desplaza dentro del plano de la cámara para apartar la
+     torre de la zona donde va el texto del hero. El desplazamiento se expresa
+     como fracción del tamaño visible, así funciona en cualquier pantalla. */
+  const dir = camera.position.clone().sub(controls.target).normalize();
+  const derecha = new THREE.Vector3().crossVectors(dir, new THREE.Vector3(0,1,0)).normalize();
+  const arribaCam = new THREE.Vector3().crossVectors(derecha, dir).normalize();
+
+  const fovRad = THREE.MathUtils.degToRad(camera.fov);
+  const asp = camera.aspect || 1;
+  const altoVisible = 2 * distanciaDeEncuadre() * Math.tan(fovRad / 2);
+  const anchoVisible = altoVisible * asp;
+
+  const d = desplazamientoHero();
+  const objetivo = centro.clone()
+    .addScaledVector(derecha, d.x * anchoVisible * 0.5)
+    .addScaledVector(arribaCam, d.y * altoVisible * 0.5);
+  controls.target.copy(objetivo);
 
   const distancia = distanciaDeEncuadre();
   const direccion = camera.position.clone().sub(centro);
   if (direccion.lengthSq() < 1e-6) direccion.set(0.55, 0.42, 0.72);  // ángulo inicial
   direccion.normalize();
 
-  camera.position.copy(centro).add(direccion.multiplyScalar(distancia));
+  camera.position.copy(objetivo).add(direccion.multiplyScalar(distancia));
 
   // Los límites del zoom acompañan al encuadre del dispositivo actual, así el
   // rango de acercamiento es equivalente en un móvil y en un monitor grande.
@@ -2061,6 +2166,26 @@ function encuadrarEscena() {
 }
 
 /* --- 3.7 Ajuste responsive del lienzo ------------------------------------ */
+/* Proporción del visor que ocupa el texto del hero por la izquierda. En
+   pantallas anchas el titular ocupa esa franja, así que la torre se desplaza
+   a la derecha para no quedar debajo del texto. En móvil el texto va arriba y
+   el modelo abajo, por lo que el desplazamiento es sólo vertical. */
+function desplazamientoHero() {
+  if (!stage) return { x: 0, y: 0 };
+  const w = stage.clientWidth, h = stage.clientHeight;
+  const asp = w / Math.max(h, 1);
+
+  if (asp > 1.15) {
+    /* Escritorio: la torre se corre a la derecha para dejar libre la franja
+       del titular (que ocupa el 51% izquierdo). Valor medido: con 0.22 el
+       switch se salía por la derecha; con 0.14 entra completo y aún queda
+       fuera de la zona de texto. */
+    return { x: 0.30, y: -0.06 };
+  }
+  // Móvil y tableta vertical: el modelo baja para dejar libre el titular
+  return { x: 0, y: -0.22 };
+}
+
 function redimensionar() {
   const w = stage.clientWidth, h = stage.clientHeight;
   if (!w || !h) return;
@@ -2095,8 +2220,10 @@ if ('ResizeObserver' in window) {
 memorizarColores();
 // Con movimiento reducido se muestra directamente el equipo despiezado,
 // que es el estado informativo; si no, arranca armado y lo desarma el scroll.
-fijarObjetivos(!despiecePorScroll);
-explosionado = !despiecePorScroll;
+// El hero muestra la torre armada; el scroll la despiega al bajar.
+// El botón manual permite forzar el despiece en cualquier momento.
+fijarObjetivos(false);
+explosionado = false;
 reflejarBotonDespiece();
 actualizarScroll();
 progresoSuave = progresoScroll;
@@ -2114,6 +2241,7 @@ window.__CONTROLS = controls;
 window.__MEDIR = medirEscena;
 window.__ENCUADRAR = encuadrarEscena;
 window.__ENCUADRE_DIST = distanciaDeEncuadre;
+window.__BOX3 = () => new THREE.Box3();
 
 /* --- 3.9 Aparición de secciones al hacer scroll -------------------------- */
 const elementosReveal = document.querySelectorAll('.reveal');

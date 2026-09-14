@@ -42,9 +42,14 @@ para qué sirve cada uno y cuánto cuesta.
 - Diseño responsive, **superficie clara** sobre el sistema de propuestas (fondo blanco,
   tinta verde-oscura, acento teal `#0f766e`, tipografías IBM Plex Sans y Mono).
   El visor 3D va sobre fondo blanco con el canvas transparente.
-- **Despiece por scroll**: el equipo arranca armado y se separa progresivamente al bajar
-  la página, con interpolación suave; al subir se vuelve a armar solo. El botón
+- **Hero inmersivo**: el visor 3D ocupa la pantalla completa y el titular editorial se
+  superpone a la izquierda. El equipo arranca armado y el scroll lo va despiezando hasta
+  mostrar todo el hardware por separado; al subir se rearma solo. El botón
   «Vista explosionada» sigue disponible como control manual.
+- **Estructura editorial numerada** (001 equipo · 002 asignación · 003 instalación ·
+  004 inversión), con titular display de hasta 84 px y aire vertical amplio.
+- **Presupuesto en panel de cristal** (`backdrop-filter`) anclado abajo a la derecha,
+  con cifras tabulares; en tableta y móvil pasa a tarjeta propia para no tapar el modelo.
 - **Visor 3D responsive**: la cámara mide la silueta real de la escena proyectada sobre
   sus propios ejes y calcula la distancia de encuadre para cada tamaño de pantalla, con
   reencuadre automático al girar el móvil (`ResizeObserver`). Verificado de 375 px a 1440 px:
