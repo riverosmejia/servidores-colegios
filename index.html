@@ -186,8 +186,8 @@ h2 em{ font-style:normal; color:var(--accent); }
   overflow:hidden;
   background:
     radial-gradient(90% 70% at 68% 42%, #ffffff 0%, #f7fbfa 45%, #eaf3f1 100%);
-  /* El visor es una superficie interactiva: la rueda no arrastra la página */
-  overscroll-behavior:contain;
+  /* Sin overscroll-behavior:contain: la rueda debe propagarse a la página para
+     poder bajar a leer el resto de la propuesta. */
   cursor:grab;
 }
 .stage:active{ cursor:grabbing; }
@@ -198,6 +198,10 @@ h2 em{ font-style:normal; color:var(--accent); }
   display:block; position:absolute; inset:0;
   width:100% !important; height:100% !important;
   z-index:2;
+  /* OrbitControls pone touch-action:none, que impide desplazar la página con
+     el dedo o con gestos de trackpad. 'pan-y' permite el scroll vertical y
+     deja el gesto horizontal para rotar el modelo. */
+  touch-action:pan-y !important;
 }
 /* Halo luminoso detrás del equipo: separa la torre del fondo sin usar bordes */
 .stage::before{
