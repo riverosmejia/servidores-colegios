@@ -540,7 +540,7 @@ h2 em{ font-style:normal; color:var(--accent); }
       </span>
       <span>
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M11 8v6M8 11h6M20 20l-3.6-3.6"/></svg>
-        Scroll para acercar
+        Ctrl + rueda para acercar
       </span>
       <span class="hide-sm">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 4.5v9M9 4.5a1.6 1.6 0 1 1 3.2 0v5a3 3 0 1 1-3.2 3"/></svg>
@@ -852,7 +852,7 @@ renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.domElement.setAttribute('role', 'img');
 renderer.domElement.setAttribute('aria-label',
   'Vista 3D interactiva del miniservidor de IA escolar. Arrastre para rotar, ' +
-  'use la rueda para acercar y haga clic sobre una pieza para ver su ficha técnica. ' +
+  'use Control más la rueda para acercar o alejar, y haga clic sobre una pieza para ver su ficha técnica. ' +
   'La lista completa de componentes está en la tabla de presupuesto.');
 renderer.domElement.style.outline = 'none';
 stage.appendChild(renderer.domElement);
@@ -913,8 +913,17 @@ const PASO_POR_PIXEL = 1.0009;
 const BASE_SUAVIZADO = 1e-6;
 let zoomObjetivo = 1;     // factor de escala acumulado pendiente de aplicar
 
+/* La rueda NO hace zoom por sí sola: sobre el visor se comporta como en
+   cualquier otra parte de la página y baja el documento, para que el usuario
+   pueda recorrer la propuesta sin quedar atrapado en el modelo. El zoom sólo
+   se activa con Ctrl (o Cmd en Mac) + rueda, que es el gesto habitual para
+   ampliar dentro de un lienzo y evita el secuestro del scroll. */
 renderer.domElement.addEventListener('wheel', e => {
-  e.preventDefault();     // anula el scroll de la página y el zoom nativo
+  // Sin Ctrl/Cmd: se deja pasar el evento. El navegador hace scroll normal.
+  if (!e.ctrlKey && !e.metaKey) return;
+
+  // Con Ctrl/Cmd: se anula el zoom nativo del navegador y se aplica el nuestro.
+  e.preventDefault();
 
   // Se normaliza el delta: las ruedas dentadas emiten ~100 por muesca y los
   // trackpads emiten valores pequeños y frecuentes. Sin esto, el trackpad se

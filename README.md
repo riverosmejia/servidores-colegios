@@ -14,10 +14,10 @@ para qué sirve cada uno y cuánto cuesta.
 - **Interactividad**: hover con resaltado y tooltip (nombre, modelo, costo y justificación),
   clic para abrir la ficha técnica en un panel lateral, botón de vista explosionada/ensamblada,
   rotación automática y contador de presupuesto con desglose resaltable.
-- **Zoom cuidado**: scroll o pellizco con amortiguación propia (dolly inercial), paso
-  proporcional del 8.5 % por muesca, doble clic para encuadrar una pieza concreta,
-  teclas `+` / `-` / `0` y rango limitado entre 6 y 55 unidades para que el equipo
-  nunca se pierda ni se vuelva ilegible.
+- **Zoom con Ctrl + rueda** (Cmd en Mac), con amortiguación propia (dolly inercial) y paso
+  proporcional del 8.5 % por muesca. La rueda sola **no** hace zoom: baja la página con
+  normalidad, para que el visor no secuestre el scroll mientras se recorre la propuesta.
+  También hay doble clic para encuadrar una pieza concreta y teclas `+` / `-` / `0`.
 - **Secciones de scroll**: asignación de recursos por GPU, requisitos de instalación física
   (ubicación, eléctrico, térmico y red) y footer con la inversión total.
 
